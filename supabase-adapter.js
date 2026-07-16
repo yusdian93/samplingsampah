@@ -69,6 +69,27 @@ export async function updateProfileRole(id, role) {
   return data;
 }
 
+// Membuat & menghapus AKUN LOGIN (bukan cuma baris profil) hanya bisa
+// dilakukan lewat Edge Function 'admin-users' (butuh service role key
+// yang tidak boleh ada di kode browser). Lihat README untuk cara deploy.
+export async function adminCreateUser(email, password, fullName, role) {
+  const { data, error } = await supabase.functions.invoke('admin-users', {
+    body: { action: 'create', email, password, full_name: fullName, role },
+  });
+  if (error) throw error;
+  if (data && data.ok === false) throw new Error(data.error);
+  return data;
+}
+
+export async function adminDeleteUser(userId) {
+  const { data, error } = await supabase.functions.invoke('admin-users', {
+    body: { action: 'delete', user_id: userId },
+  });
+  if (error) throw error;
+  if (data && data.ok === false) throw new Error(data.error);
+  return data;
+}
+
 // ---------------------------------------------------------------------
 // PARAMETER & KLASIFIKASI PRAKTIK (referensi, umumnya hanya dibaca)
 // ---------------------------------------------------------------------
