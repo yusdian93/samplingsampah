@@ -406,13 +406,17 @@
         <p>Target 30 responden per desa, 10 di antaranya masuk sub-sampel penimbangan.</p>
       </div>
       <div class="card">
-        <h3>Tambah Data Survei RT</h3>
+        <h3 id="f2-form-title">Tambah Data Survei RT</h3>
         <form id="form-f2">
           <div class="form-grid">
-            <div class="field"><label>ID RT</label><input type="text" id="f2-idrt" required placeholder="D01-RT031" /></div>
             <div class="field">
               <label>Kode Desa</label>
               <select id="f2-desa" required></select>
+            </div>
+            <div class="field">
+              <label>Nomor RT</label>
+              <input type="text" id="f2-idrt" required placeholder="RT001" maxlength="5" pattern="RT[0-9]{3}" title="Format: RT001" style="text-transform:uppercase;" />
+              <div class="hint">ID lengkap: <strong id="f2-idrt-preview">–</strong></div>
             </div>
             <div class="field"><label>Tanggal</label><input type="date" id="f2-tanggal" required /></div>
             <div class="field"><label>Enumerator</label><input type="text" id="f2-enum" /></div>
@@ -436,7 +440,10 @@
             <div class="field wide"><label>Bukti Minimal</label><input type="text" id="f2-bukti" placeholder="Wawancara+Observasi+Timbang+Foto" /></div>
             <div class="field wide"><label>Catatan</label><input type="text" id="f2-catatan" /></div>
           </div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Survei</button></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="f2-submit-btn">Simpan Survei</button>
+            <button class="btn btn-outline" type="button" id="btn-f2-cancel" style="display:none;">Batal Edit</button>
+          </div>
         </form>
       </div>
       <div class="card">
@@ -554,7 +561,7 @@ import {
   supabase, signIn, signUp, signOut, getSession, onAuthChange, getMyProfile,
   listParameter, listKlasifikasiPraktik,
   listDesa, upsertDesa,
-  listForm2, insertForm2,
+  listForm2, insertForm2, updateForm2, deleteForm2,
   listForm3, insertForm3,
   listForm4, insertForm4,
   getRekapDesa, getRekapTipologi, getDataAkhirKabupaten,
@@ -804,11 +811,88 @@ async function refreshDesa() {
 // ---------------------------------------------------------------------
 // FORM2: SURVEI
 // ---------------------------------------------------------------------
+let editingForm2Id = null;
+let form2Cache = [];
+
+function updateF2IdRtPreview() {
+  const kode = $('#f2-desa').value;
+  let suffix = $('#f2-idrt').value.trim().toUpperCase();
+  $('#f2-idrt-preview').textContent = (kode && suffix) ? `${kode}-${suffix}` : '–';
+}
+$('#f2-desa').addEventListener('change', updateF2IdRtPreview);
+$('#f2-idrt').addEventListener('input', (e) => {
+  e.target.value = e.target.value.toUpperCase();
+  updateF2IdRtPreview();
+});
+
+function resetForm2Form() {
+  $('#form-f2').reset();
+  editingForm2Id = null;
+  $('#f2-form-title').textContent = 'Tambah Data Survei RT';
+  $('#f2-submit-btn').textContent = 'Simpan Survei';
+  $('#btn-f2-cancel').style.display = 'none';
+  $('#f2-desa').disabled = false;
+  $('#f2-idrt').disabled = false;
+  updateF2IdRtPreview();
+}
+
+$('#btn-f2-cancel').addEventListener('click', resetForm2Form);
+
+function editForm2Row(id) {
+  const r = form2Cache.find(x => x.id === id);
+  if (!r) return;
+  const suffix = r.id_rt.includes('-') ? r.id_rt.slice(r.id_rt.indexOf('-') + 1) : r.id_rt;
+  $('#f2-desa').value = r.kode_desa;
+  $('#f2-idrt').value = suffix;
+  $('#f2-desa').disabled = true;   // hindari ubah ID RT agar tidak merusak keterkaitan data FORM3/FORM4
+  $('#f2-idrt').disabled = true;
+  updateF2IdRtPreview();
+  $('#f2-tanggal').value = r.tanggal || '';
+  $('#f2-enum').value = r.enumerator || '';
+  $('#f2-anggota').value = r.jumlah_anggota ?? '';
+  $('#f2-subsample').value = String(r.subsample_timbang);
+  $('#f2-q1').value = r.q1_pengelola_sampah || '';
+  $('#f2-q2').value = r.q2_praktik_sisa_makanan || '';
+  $('#f2-q3').value = r.q3_organik_dipilah || '';
+  $('#f2-q4').value = r.q4_ada_ternak || '';
+  $('#f2-q5').value = r.q5_praktik_daun_halaman || '';
+  $('#f2-q6').value = r.q6_komposter_jogangan || '';
+  $('#f2-q7').value = r.q7_organik_bersih || '';
+  $('#f2-q8').value = r.q8_praktik_anorganik || '';
+  $('#f2-q9').value = r.q9_pembakaran || '';
+  $('#f2-q10').value = r.q10_buang_lingkungan || '';
+  $('#f2-q11').value = r.q11_layanan_angkut || '';
+  $('#f2-q12').value = r.q12_hambatan_utama || '';
+  $('#f2-bukti').value = r.bukti_minimal || '';
+  $('#f2-catatan').value = r.catatan || '';
+  editingForm2Id = r.id;
+  $('#f2-form-title').textContent = 'Edit Data Survei: ' + r.id_rt;
+  $('#f2-submit-btn').textContent = 'Simpan Perubahan';
+  $('#btn-f2-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.editForm2Row = editForm2Row;
+
+async function deleteForm2Row(id) {
+  const r = form2Cache.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Hapus data survei ${r.id_rt}? Tindakan ini tidak bisa dibatalkan.`)) return;
+  try {
+    await deleteForm2(id);
+    toast('Data survei dihapus.');
+    if (editingForm2Id === id) resetForm2Form();
+    await refreshForm2();
+  } catch (err) { toast(err.message, true); }
+}
+window.deleteForm2Row = deleteForm2Row;
+
 $('#form-f2').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const kodeDesa = $('#f2-desa').value;
+  const rtSuffix = $('#f2-idrt').value.trim().toUpperCase();
   const row = {
-    id_rt: $('#f2-idrt').value.trim(),
-    kode_desa: $('#f2-desa').value,
+    id_rt: `${kodeDesa}-${rtSuffix}`,
+    kode_desa: kodeDesa,
     tanggal: $('#f2-tanggal').value,
     enumerator: $('#f2-enum').value,
     jumlah_anggota: Number($('#f2-anggota').value) || null,
@@ -829,9 +913,16 @@ $('#form-f2').addEventListener('submit', async (e) => {
     catatan: $('#f2-catatan').value,
   };
   try {
-    await insertForm2(row);
-    toast('Data survei tersimpan.');
-    $('#form-f2').reset();
+    if (editingForm2Id) {
+      // ID RT & kode desa dikunci saat edit; jangan kirim ulang untuk hindari konflik unik
+      const { id_rt, kode_desa, ...editableRow } = row;
+      await updateForm2(editingForm2Id, editableRow);
+      toast('Perubahan data survei tersimpan.');
+    } else {
+      await insertForm2(row);
+      toast('Data survei tersimpan.');
+    }
+    resetForm2Form();
     await refreshForm2();
   } catch (err) { toast(err.message, true); }
 });
@@ -840,7 +931,7 @@ $('#f2-filter-desa').addEventListener('change', refreshForm2);
 
 async function refreshForm2() {
   const kode = $('#f2-filter-desa').value || null;
-  const rows = await listForm2(kode);
+  form2Cache = await listForm2(kode);
   renderTable($('#tbl-f2'), [
     { key: 'id_rt', label: 'ID RT' },
     { key: 'kode_desa', label: 'Desa' },
@@ -850,7 +941,11 @@ async function refreshForm2() {
     { key: 'subsample_timbang', label: 'Sub-sampel', render: r => r.subsample_timbang ? '<span class="badge badge-ok">Ya</span>' : 'Tidak' },
     { key: 'q9_pembakaran', label: 'Pembakaran' },
     { key: 'q11_layanan_angkut', label: 'Layanan Angkut' },
-  ], rows);
+  ], form2Cache, r => `
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" onclick="editForm2Row('${r.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteForm2Row('${r.id}')">Hapus</button>
+    </div>`);
 }
 
 // ---------------------------------------------------------------------
