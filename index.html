@@ -563,7 +563,26 @@
     <section class="page" id="page-petugas">
       <div class="page-head">
         <h2>Kelola Petugas</h2>
-        <p>Atur hak akses tiap akun. <strong>User</strong> hanya bisa mengisi form &amp; melihat rekap. <strong>Admin</strong> juga bisa mengatur Profil Desa dan mengubah role petugas lain.</p>
+        <p><strong>User</strong> hanya bisa mengisi form &amp; melihat rekap. <strong>Admin</strong> juga bisa mengatur Profil Desa dan mengelola akun petugas lain.</p>
+      </div>
+      <div class="card">
+        <h3>Tambah Petugas Baru</h3>
+        <form id="form-petugas-baru">
+          <div class="form-grid">
+            <div class="field"><label>Nama Lengkap</label><input type="text" id="pb-nama" required /></div>
+            <div class="field"><label>Email</label><input type="email" id="pb-email" required /></div>
+            <div class="field"><label>Kata Sandi Awal</label><input type="password" id="pb-password" required minlength="6" placeholder="Minimal 6 karakter" /></div>
+            <div class="field">
+              <label>Role</label>
+              <select id="pb-role">
+                <option value="enumerator">User (Enumerator)</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <p class="hint">Akun langsung aktif — petugas bisa langsung login pakai email &amp; kata sandi ini (bisa diganti nanti oleh yang bersangkutan).</p>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">Buat Akun</button></div>
+        </form>
       </div>
       <div class="card"><div class="table-wrap"><table id="tbl-petugas"><thead></thead><tbody></tbody></table></div></div>
     </section>
@@ -581,7 +600,7 @@ import {
   listForm3, insertForm3, updateForm3, deleteForm3,
   listForm4, insertForm4, updateForm4, deleteForm4,
   getRekapDesa, getRekapTipologi, getDataAkhirKabupaten,
-  listProfiles, updateProfileRole,
+  listProfiles, updateProfileRole, adminCreateUser, adminDeleteUser,
 } from './supabase-adapter.js';
 
 // ---------------------------------------------------------------------
@@ -1272,6 +1291,28 @@ async function refreshRekapTipologi() {
 // ---------------------------------------------------------------------
 // KELOLA PETUGAS (ADMIN)
 // ---------------------------------------------------------------------
+$('#form-petugas-baru').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  const fullName = $('#pb-nama').value.trim();
+  const email = $('#pb-email').value.trim();
+  const password = $('#pb-password').value;
+  const role = $('#pb-role').value;
+  btn.disabled = true;
+  btn.textContent = 'Membuat akun…';
+  try {
+    await adminCreateUser(email, password, fullName, role);
+    toast(`Akun untuk ${fullName} berhasil dibuat.`);
+    $('#form-petugas-baru').reset();
+    await refreshPetugas();
+  } catch (err) {
+    toast(err.message || 'Gagal membuat akun.', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Buat Akun';
+  }
+});
+
 async function changePetugasRole(id, newRole) {
   try {
     await updateProfileRole(id, newRole);
@@ -1281,13 +1322,23 @@ async function changePetugasRole(id, newRole) {
 }
 window.changePetugasRole = changePetugasRole;
 
+async function deletePetugas(id, nama) {
+  if (!confirm(`Hapus akun "${nama}"? Petugas ini tidak akan bisa login lagi. Data yang sudah diinput sebelumnya tetap tersimpan.`)) return;
+  try {
+    await adminDeleteUser(id);
+    toast('Akun petugas dihapus.');
+    await refreshPetugas();
+  } catch (err) { toast(err.message, true); }
+}
+window.deletePetugas = deletePetugas;
+
 async function refreshPetugas() {
   const rows = await listProfiles();
   const thead = $('#tbl-petugas thead');
   const tbody = $('#tbl-petugas tbody');
-  thead.innerHTML = '<tr><th>Nama</th><th>Email</th><th>Role</th><th>Terdaftar</th></tr>';
+  thead.innerHTML = '<tr><th>Nama</th><th>Email</th><th>Role</th><th>Terdaftar</th><th></th></tr>';
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada petugas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada petugas.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(r => {
@@ -1304,6 +1355,7 @@ async function refreshPetugas() {
           </select>
         </td>
         <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '–'}</td>
+        <td>${isSelf ? '' : `<button class="btn btn-danger btn-sm" onclick="deletePetugas('${r.id}', '${(r.full_name || r.email || '').replace(/'/g, "\\'")}')">Hapus</button>`}</td>
       </tr>`;
   }).join('');
 }
