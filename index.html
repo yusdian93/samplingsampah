@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sampling Organik Tulungagung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil-900:#1F2E1B;
+    --soil-800:#2C4023;
+    --leaf-600:#3F7D3B;
+    --leaf-500:#57A046;
+    --leaf-100:#E4EFDD;
+    --compost-500:#B4813F;
+    --compost-100:#F3E7D3;
+    --paper:#FAF8F3;
+    --paper-card:#FFFFFF;
+    --ink-900:#1B1B16;
+    --ink-600:#5B5B4F;
+    --ink-400:#8B8B7C;
+    --line:#E4E1D6;
+    --danger:#B3261E;
+    --danger-bg:#FBEAE9;
+    --ok-bg:#E4EFDD;
+    --radius:10px;
+    --font-display:'Plus Jakarta Sans', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-display);
+    background:var(--paper);
+    color:var(--ink-900);
+    min-height:100vh;
+  }
+  ::selection{background:var(--leaf-100);}
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(87,160,70,0.14), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(180,129,63,0.14), transparent 45%),
+      var(--soil-900);
+    padding:24px;
+  }
+  .login-card{
+    width:100%;
+    max-width:400px;
+    background:var(--paper-card);
+    border-radius:16px;
+    padding:36px 32px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.35);
+  }
+  .login-eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--leaf-600);
+    margin:0 0 6px;
+  }
+  .login-card h1{
+    font-size:22px;
+    margin:0 0 4px;
+    line-height:1.25;
+  }
+  .login-card p.sub{
+    color:var(--ink-600);
+    font-size:13.5px;
+    margin:0 0 24px;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-600);
+    margin-bottom:5px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-family:inherit;
+    font-size:14px;
+    background:#fff;
+    color:var(--ink-900);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:2px solid var(--leaf-500);
+    outline-offset:1px;
+    border-color:var(--leaf-500);
+  }
+  .btn{
+    appearance:none;
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    font-family:inherit;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:transform .05s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--leaf-600); color:#fff;}
+  .btn-primary:hover{background:var(--leaf-500);}
+  .btn-block{width:100%;}
+  .btn-ghost{background:transparent; color:var(--leaf-600); padding:8px 4px;}
+  .btn-outline{background:#fff; border:1px solid var(--line); color:var(--ink-900);}
+  .btn-outline:hover{border-color:var(--leaf-500); color:var(--leaf-600);}
+  .btn-danger{background:var(--danger-bg); color:var(--danger);}
+  .btn-sm{padding:6px 10px; font-size:12.5px; border-radius:6px;}
+  #login-error{
+    color:var(--danger);
+    font-size:13px;
+    margin:-6px 0 12px;
+    min-height:16px;
+  }
+  .login-toggle{
+    text-align:center;
+    margin-top:14px;
+    font-size:13px;
+    color:var(--ink-600);
+  }
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none; min-height:100vh; grid-template-columns:236px 1fr;}
+  #app.active{display:grid;}
+  aside{
+    background:var(--soil-900);
+    color:#fff;
+    padding:22px 16px;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#9CC98F;
+    margin-bottom:2px;
+  }
+  .brand-title{
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 26px;
+    line-height:1.3;
+  }
+  nav.tabs{display:flex; flex-direction:column; gap:2px; flex:1;}
+  nav.tabs button{
+    text-align:left;
+    background:transparent;
+    border:none;
+    color:#D8DCCC;
+    padding:10px 12px;
+    border-radius:8px;
+    font-family:inherit;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  nav.tabs button .dot{width:5px;height:5px;border-radius:50%;background:#5B6B50;flex:none;}
+  nav.tabs button:hover{background:rgba(255,255,255,0.06); color:#fff;}
+  nav.tabs button.active{background:var(--leaf-600); color:#fff;}
+  nav.tabs button.active .dot{background:#fff;}
+  .side-foot{
+    border-top:1px solid rgba(255,255,255,0.12);
+    padding-top:14px;
+    font-size:12.5px;
+    color:#B7BCA9;
+  }
+  .side-foot .name{color:#fff; font-weight:600; font-size:13px;}
+  .side-foot .role-badge{
+    display:inline-block;
+    margin-top:4px;
+    padding:2px 8px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.1);
+    font-size:10.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+  }
+  .side-foot button{margin-top:10px;}
+
+  main{padding:26px 34px 60px; max-width:1180px;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-head{margin-bottom:20px;}
+  .page-head h2{margin:0 0 4px; font-size:21px;}
+  .page-head p{margin:0; color:var(--ink-600); font-size:13.5px;}
+
+  .grid-kpi{display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:14px; margin-bottom:24px;}
+  .kpi-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .kpi-card .label{font-size:12px; color:var(--ink-600); margin-bottom:6px;}
+  .kpi-card .value{font-size:24px; font-weight:800; font-family:var(--font-mono); color:var(--soil-800);}
+  .kpi-card .unit{font-size:12px; color:var(--ink-400); margin-left:3px; font-weight:500;}
+  .kpi-card .target{font-size:11.5px; color:var(--leaf-600); margin-top:4px;}
+
+  .card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:22px;
+  }
+  .card h3{margin:0 0 14px; font-size:15px;}
+  .card-flex{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .card-flex h3{margin:0;}
+
+  .form-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px 14px;}
+  .form-grid .field.wide{grid-column:1/-1;}
+  .form-actions{margin-top:16px; display:flex; gap:10px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--ink-600);
+    border-bottom:1px solid var(--line);
+    padding:8px 10px;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody tr:hover{background:var(--leaf-100);}
+  .table-wrap{overflow-x:auto;}
+  .badge{
+    display:inline-block;
+    padding:2px 9px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .badge-ok{background:var(--ok-bg); color:var(--leaf-600);}
+  .badge-warn{background:var(--compost-100); color:var(--compost-500);}
+  .badge-danger{background:var(--danger-bg); color:var(--danger);}
+  select.filter{max-width:220px;}
+  .row-actions{display:flex; gap:6px;}
+  .empty{color:var(--ink-400); font-size:13px; padding:14px 0;}
+  .hint{font-size:12px; color:var(--ink-400); margin-top:4px;}
+  .toast{
+    position:fixed; bottom:20px; right:20px;
+    background:var(--soil-900); color:#fff;
+    padding:11px 16px; border-radius:8px; font-size:13.5px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    z-index:999; display:none;
+  }
+  .toast.show{display:block;}
+  .toast.error{background:var(--danger);}
+  legend-table td{font-family:var(--font-mono);}
+  @media (max-width: 860px){
+    #app.active{grid-template-columns:1fr;}
+    aside{flex-direction:row; overflow-x:auto; align-items:center;}
+    nav.tabs{flex-direction:row;}
+    main{padding:18px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <p class="login-eyebrow">Dinas Lingkungan Hidup · Kab. Tulungagung</p>
+    <h1 id="login-title">Masuk Aplikasi</h1>
+    <p class="sub">Sampling &amp; Estimasi Timbulan Sampah Organik</p>
+    <div id="login-error"></div>
+    <form id="form-login">
+      <div class="field" id="field-fullname" style="display:none;">
+        <label>Nama Lengkap</label>
+        <input type="text" id="login-fullname" placeholder="Nama petugas" />
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" required placeholder="petugas@tulungagung.go.id" />
+      </div>
+      <div class="field">
+        <label>Kata Sandi</label>
+        <input type="password" id="login-password" required placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary btn-block" type="submit" id="login-submit">Masuk</button>
+    </form>
+    <div class="login-toggle">
+      <span id="login-toggle-text">Belum punya akun?</span>
+      <button class="btn-ghost" id="login-toggle-btn" type="button">Daftar petugas baru</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <aside>
+    <div class="brand">Estimasi Organik</div>
+    <div class="brand-title">Sampling Tulungagung</div>
+    <nav class="tabs" id="nav-tabs">
+      <button data-tab="dashboard" class="active"><span class="dot"></span>Dashboard</button>
+      <button data-tab="desa"><span class="dot"></span>Profil Desa</button>
+      <button data-tab="form2"><span class="dot"></span>Survei 12Q</button>
+      <button data-tab="form3"><span class="dot"></span>Penimbangan 8 Hari</button>
+      <button data-tab="form4"><span class="dot"></span>Validasi &amp; Rekonsiliasi</button>
+      <button data-tab="rekapdesa"><span class="dot"></span>Rekap Desa</button>
+      <button data-tab="rekaptipologi"><span class="dot"></span>Rekap Tipologi</button>
+    </nav>
+    <div class="side-foot">
+      <div class="name" id="side-username">–</div>
+      <span class="role-badge" id="side-role">–</span>
+      <button class="btn btn-outline btn-sm btn-block" id="btn-logout">Keluar</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <h2>Dashboard Estimasi Terverifikasi</h2>
+        <p>Ringkasan capaian sampling tingkat kabupaten, dihitung otomatis dari seluruh data lapangan.</p>
+      </div>
+      <div class="grid-kpi" id="kpi-grid"></div>
+      <div class="card">
+        <h3>Status Kelayakan Data</h3>
+        <p id="status-kelayakan-text" class="empty">Memuat…</p>
+      </div>
+    </section>
+
+    <!-- FORM1: DESA -->
+    <section class="page" id="page-desa">
+      <div class="page-head">
+        <h2>Profil Desa (FORM1)</h2>
+        <p>4 strata × 3 desa = 12 desa sampel. Hanya admin yang dapat menambah/mengubah profil desa.</p>
+      </div>
+      <div class="card" id="card-form-desa">
+        <h3 id="desa-form-title">Tambah Desa</h3>
+        <form id="form-desa">
+          <div class="form-grid">
+            <div class="field"><label>Kode Desa</label><input type="text" id="d-kode" required placeholder="D01" /></div>
+            <div class="field"><label>Nama Desa</label><input type="text" id="d-nama" required /></div>
+            <div class="field"><label>Kecamatan</label><input type="text" id="d-kecamatan" /></div>
+            <div class="field">
+              <label>Strata</label>
+              <select id="d-strata" required>
+                <option value="Perdesaan datar/pertanian">S1 – Perdesaan datar/pertanian</option>
+                <option value="Peri-urban/berkembang">S2 – Peri-urban/berkembang</option>
+                <option value="Pegunungan/sulit akses">S3 – Pegunungan/sulit akses</option>
+                <option value="Desa dengan modal pengelolaan/risiko lingkungan">S4 – Modal pengelolaan/risiko lingkungan</option>
+              </select>
+            </div>
+            <div class="field"><label>Penduduk</label><input type="number" id="d-penduduk" min="0" /></div>
+            <div class="field"><label>Jumlah RT</label><input type="number" id="d-rt" min="0" /></div>
+            <div class="field">
+              <label>Ada Fasilitas Organik</label>
+              <select id="d-fasilitas"><option value="false">Tidak</option><option value="true">Ya</option></select>
+            </div>
+            <div class="field">
+              <label>Layanan Angkut</label>
+              <select id="d-angkut">
+                <option value="Tidak ada">Tidak ada</option>
+                <option value="Ada tidak rutin">Ada tidak rutin</option>
+                <option value="Ada rutin">Ada rutin</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Risiko Lingkungan</label>
+              <select id="d-risiko"><option>Rendah</option><option>Sedang</option><option>Tinggi</option></select>
+            </div>
+            <div class="field wide"><label>Catatan</label><input type="text" id="d-catatan" /></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Simpan Desa</button>
+            <button class="btn btn-outline" type="button" id="btn-desa-cancel" style="display:none;">Batal Edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-flex"><h3>Daftar Desa</h3></div>
+        <div class="table-wrap"><table id="tbl-desa"><thead></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- FORM2: SURVEI -->
+    <section class="page" id="page-form2">
+      <div class="page-head">
+        <h2>Survei Observasi 12 Pertanyaan (FORM2)</h2>
+        <p>Target 30 responden per desa, 10 di antaranya masuk sub-sampel penimbangan.</p>
+      </div>
+      <div class="card">
+        <h3>Tambah Data Survei RT</h3>
+        <form id="form-f2">
+          <div class="form-grid">
+            <div class="field"><label>ID RT</label><input type="text" id="f2-idrt" required placeholder="D01-RT031" /></div>
+            <div class="field">
+              <label>Kode Desa</label>
+              <select id="f2-desa" required></select>
+            </div>
+            <div class="field"><label>Tanggal</label><input type="date" id="f2-tanggal" required /></div>
+            <div class="field"><label>Enumerator</label><input type="text" id="f2-enum" /></div>
+            <div class="field"><label>Jumlah Anggota</label><input type="number" id="f2-anggota" min="0" /></div>
+            <div class="field">
+              <label>Masuk Sub-sampel Timbang?</label>
+              <select id="f2-subsample"><option value="false">Tidak</option><option value="true">Ya</option></select>
+            </div>
+            <div class="field"><label>Q1 Pengelola Sampah</label><input type="text" id="f2-q1" /></div>
+            <div class="field"><label>Q2 Praktik Sisa Makanan</label><input type="text" id="f2-q2" /></div>
+            <div class="field"><label>Q3 Organik Dipilah</label><input type="text" id="f2-q3" /></div>
+            <div class="field"><label>Q4 Ada Ternak</label><input type="text" id="f2-q4" /></div>
+            <div class="field"><label>Q5 Praktik Daun/Halaman</label><input type="text" id="f2-q5" /></div>
+            <div class="field"><label>Q6 Komposter/Jogangan</label><input type="text" id="f2-q6" /></div>
+            <div class="field"><label>Q7 Organik Bersih</label><input type="text" id="f2-q7" /></div>
+            <div class="field"><label>Q8 Praktik Anorganik</label><input type="text" id="f2-q8" /></div>
+            <div class="field"><label>Q9 Pembakaran</label><input type="text" id="f2-q9" /></div>
+            <div class="field"><label>Q10 Buang Lingkungan</label><input type="text" id="f2-q10" /></div>
+            <div class="field"><label>Q11 Layanan Angkut</label><input type="text" id="f2-q11" /></div>
+            <div class="field"><label>Q12 Hambatan Utama</label><input type="text" id="f2-q12" /></div>
+            <div class="field wide"><label>Bukti Minimal</label><input type="text" id="f2-bukti" placeholder="Wawancara+Observasi+Timbang+Foto" /></div>
+            <div class="field wide"><label>Catatan</label><input type="text" id="f2-catatan" /></div>
+          </div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Survei</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-flex">
+          <h3>Data Survei</h3>
+          <select class="filter" id="f2-filter-desa"><option value="">Semua desa</option></select>
+        </div>
+        <div class="table-wrap"><table id="tbl-f2"><thead></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- FORM3: PENIMBANGAN -->
+    <section class="page" id="page-form3">
+      <div class="page-head">
+        <h2>Penimbangan 8 Hari (FORM3)</h2>
+        <p>Dicatat harian untuk setiap RT sub-sampel: organik, anorganik bernilai, dan residu.</p>
+      </div>
+      <div class="card">
+        <h3>Tambah Data Timbang Harian</h3>
+        <form id="form-f3">
+          <div class="form-grid">
+            <div class="field"><label>Tanggal</label><input type="date" id="f3-tanggal" required /></div>
+            <div class="field"><label>Hari Ke (1-8)</label><input type="number" id="f3-hari" min="1" max="8" required /></div>
+            <div class="field"><label>Kode Desa</label><select id="f3-desa" required></select></div>
+            <div class="field"><label>ID RT</label><select id="f3-idrt" required></select></div>
+            <div class="field"><label>Jumlah Anggota</label><input type="number" id="f3-anggota" min="0" /></div>
+            <div class="field"><label>Organik Total (kg)</label><input type="number" step="0.01" id="f3-organik" required /></div>
+            <div class="field"><label>Anorganik Bernilai (kg)</label><input type="number" step="0.01" id="f3-anorganik" /></div>
+            <div class="field"><label>Residu (kg)</label><input type="number" step="0.01" id="f3-residu" /></div>
+            <div class="field wide"><label>Catatan</label><input type="text" id="f3-catatan" /></div>
+          </div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Timbang</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-flex">
+          <h3>Data Penimbangan</h3>
+          <select class="filter" id="f3-filter-desa"><option value="">Semua desa</option></select>
+        </div>
+        <div class="table-wrap"><table id="tbl-f3"><thead></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- FORM4: VALIDASI -->
+    <section class="page" id="page-form4">
+      <div class="page-head">
+        <h2>Validasi &amp; Rekonsiliasi Praktik (FORM4)</h2>
+        <p>Rincian per kode praktik (O1–O5 dihitung, R1–R4 tidak/bukan pengurangan organik) + bukti lapangan.</p>
+      </div>
+      <div class="card">
+        <h3>Legenda Klasifikasi Praktik</h3>
+        <div class="table-wrap"><table id="tbl-klasifikasi"><thead></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <h3>Tambah Data Validasi</h3>
+        <form id="form-f4">
+          <div class="form-grid">
+            <div class="field"><label>Tanggal</label><input type="date" id="f4-tanggal" required /></div>
+            <div class="field"><label>Hari Ke (1-8)</label><input type="number" id="f4-hari" min="1" max="8" required /></div>
+            <div class="field"><label>Kode Desa</label><select id="f4-desa" required></select></div>
+            <div class="field"><label>ID RT</label><select id="f4-idrt" required></select></div>
+            <div class="field"><label>Organik Terukur (kg)</label><input type="number" step="0.01" id="f4-terukur" required /></div>
+            <div class="field"><label>O1 – Pakan ternak (kg)</label><input type="number" step="0.01" id="f4-o1" value="0" /></div>
+            <div class="field"><label>O2 – Kompos RT (kg)</label><input type="number" step="0.01" id="f4-o2" value="0" /></div>
+            <div class="field"><label>O3 – Kompos komunal (kg)</label><input type="number" step="0.01" id="f4-o3" value="0" /></div>
+            <div class="field"><label>O4 – Jogangan bersih (kg)</label><input type="number" step="0.01" id="f4-o4" value="0" /></div>
+            <div class="field"><label>O5 – Serasah dikelola (kg)</label><input type="number" step="0.01" id="f4-o5" value="0" /></div>
+            <div class="field"><label>R1 – Campur+angkut (kg)</label><input type="number" step="0.01" id="f4-r1" value="0" /></div>
+            <div class="field"><label>R2 – Dibakar (kg)</label><input type="number" step="0.01" id="f4-r2" value="0" /></div>
+            <div class="field"><label>R3 – Dibuang lingkungan (kg)</label><input type="number" step="0.01" id="f4-r3" value="0" /></div>
+            <div class="field"><label>R4 – Belum terverifikasi (kg)</label><input type="number" step="0.01" id="f4-r4" value="0" /></div>
+            <div class="field"><label>Bukti Wawancara</label><select id="f4-bw"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
+            <div class="field"><label>Bukti Observasi</label><select id="f4-bo"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
+            <div class="field"><label>Bukti Timbang</label><select id="f4-bt"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
+            <div class="field"><label>Bukti Foto/Logbook</label><select id="f4-bf"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
+            <div class="field wide"><label>Catatan</label><input type="text" id="f4-catatan" /></div>
+          </div>
+          <p class="hint">Faktor bukti, total rincian, selisih, organik terkoreksi, dan status rekonsiliasi dihitung otomatis oleh database setelah data disimpan.</p>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Validasi</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-flex">
+          <h3>Data Validasi &amp; Rekonsiliasi</h3>
+          <select class="filter" id="f4-filter-desa"><option value="">Semua desa</option></select>
+        </div>
+        <div class="table-wrap"><table id="tbl-f4"><thead></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- REKAP DESA -->
+    <section class="page" id="page-rekapdesa">
+      <div class="page-head">
+        <h2>Rekap Desa</h2>
+        <p>Dihitung otomatis (VIEW database) dari FORM2, FORM3, dan FORM4 — setara sheet REKAP DESA.</p>
+      </div>
+      <div class="card"><div class="table-wrap"><table id="tbl-rekapdesa"><thead></thead><tbody></tbody></table></div></div>
+    </section>
+
+    <!-- REKAP TIPOLOGI -->
+    <section class="page" id="page-rekaptipologi">
+      <div class="page-head">
+        <h2>Rekap Tipologi (Strata)</h2>
+        <p>Agregasi Rekap Desa per strata — setara sheet REKAP Tipologi.</p>
+      </div>
+      <div class="card"><div class="table-wrap"><table id="tbl-rekaptipologi"><thead></thead><tbody></tbody></table></div></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {
+  supabase, signIn, signUp, signOut, getSession, onAuthChange, getMyProfile,
+  listParameter, listKlasifikasiPraktik,
+  listDesa, upsertDesa,
+  listForm2, insertForm2,
+  listForm3, insertForm3,
+  listForm4, insertForm4,
+  getRekapDesa, getRekapTipologi, getDataAkhirKabupaten,
+} from './supabase-adapter.js';
+
+// ---------------------------------------------------------------------
+// UI HELPERS
+// ---------------------------------------------------------------------
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function toast(msg, isError = false) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function renderTable(tableEl, columns, rows, actionsRenderer) {
+  const thead = tableEl.querySelector('thead');
+  const tbody = tableEl.querySelector('tbody');
+  thead.innerHTML = '<tr>' + columns.map(c => `<th>${c.label}</th>`).join('') + (actionsRenderer ? '<th></th>' : '') + '</tr>';
+  if (!rows || rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${columns.length + (actionsRenderer?1:0)}" class="empty">Belum ada data.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const cells = columns.map(c => `<td>${c.render ? c.render(r) : (r[c.key] ?? '')}</td>`).join('');
+    const actionCell = actionsRenderer ? `<td>${actionsRenderer(r)}</td>` : '';
+    return `<tr>${cells}${actionCell}</tr>`;
+  }).join('');
+}
+
+const fmt = (n, digits = 2) => (n === null || n === undefined) ? '–' : Number(n).toLocaleString('id-ID', { maximumFractionDigits: digits });
+const pct = (n) => (n === null || n === undefined) ? '–' : (Number(n) * 100).toFixed(0) + '%';
+
+// ---------------------------------------------------------------------
+// AUTH FLOW
+// ---------------------------------------------------------------------
+let isSignUpMode = false;
+let currentProfile = null;
+
+$('#login-toggle-btn').addEventListener('click', () => {
+  isSignUpMode = !isSignUpMode;
+  $('#field-fullname').style.display = isSignUpMode ? 'block' : 'none';
+  $('#login-title').textContent = isSignUpMode ? 'Daftar Petugas' : 'Masuk Aplikasi';
+  $('#login-submit').textContent = isSignUpMode ? 'Daftar' : 'Masuk';
+  $('#login-toggle-text').textContent = isSignUpMode ? 'Sudah punya akun?' : 'Belum punya akun?';
+  $('#login-toggle-btn').textContent = isSignUpMode ? 'Masuk' : 'Daftar petugas baru';
+  $('#login-error').textContent = '';
+});
+
+$('#form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('#login-error').textContent = '';
+  const email = $('#login-email').value.trim();
+  const password = $('#login-password').value;
+  try {
+    if (isSignUpMode) {
+      const fullName = $('#login-fullname').value.trim() || email;
+      await signUp(email, password, fullName);
+      toast('Akun dibuat. Jika verifikasi email aktif, cek inbox Anda lalu masuk.');
+      isSignUpMode = false;
+      $('#login-toggle-btn').click();
+    } else {
+      await signIn(email, password);
+    }
+  } catch (err) {
+    $('#login-error').textContent = err.message || 'Terjadi kesalahan.';
+  }
+});
+
+$('#btn-logout').addEventListener('click', async () => {
+  await signOut();
+});
+
+onAuthChange(async (session) => {
+  if (session) {
+    await enterApp();
+  } else {
+    $('#login-screen').style.display = 'flex';
+    $('#app').classList.remove('active');
+  }
+});
+
+async function enterApp() {
+  $('#login-screen').style.display = 'none';
+  $('#app').classList.add('active');
+  try {
+    currentProfile = await getMyProfile();
+  } catch { currentProfile = null; }
+  $('#side-username').textContent = currentProfile?.full_name || 'Petugas';
+  $('#side-role').textContent = currentProfile?.role === 'admin' ? 'Admin' : 'Enumerator';
+  $('#card-form-desa').style.display = currentProfile?.role === 'admin' ? 'block' : 'none';
+  await loadAllReferenceData();
+  await refreshCurrentTab();
+}
+
+// ---------------------------------------------------------------------
+// TAB NAVIGATION
+// ---------------------------------------------------------------------
+const tabRefreshers = {
+  dashboard: refreshDashboard,
+  desa: refreshDesa,
+  form2: refreshForm2,
+  form3: refreshForm3,
+  form4: refreshForm4,
+  rekapdesa: refreshRekapDesa,
+  rekaptipologi: refreshRekapTipologi,
+};
+let currentTab = 'dashboard';
+
+$$('#nav-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('#nav-tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $$('.page').forEach(p => p.classList.remove('active'));
+    currentTab = btn.dataset.tab;
+    $('#page-' + currentTab).classList.add('active');
+    refreshCurrentTab();
+  });
+});
+
+async function refreshCurrentTab() {
+  try { await tabRefreshers[currentTab]?.(); }
+  catch (err) { toast(err.message || 'Gagal memuat data', true); }
+}
+
+// ---------------------------------------------------------------------
+// REFERENCE DATA (desa list dipakai di banyak dropdown)
+// ---------------------------------------------------------------------
+let desaCache = [];
+
+async function loadAllReferenceData() {
+  desaCache = await listDesa();
+  fillDesaSelects();
+}
+
+function fillDesaSelects() {
+  const opts = desaCache.map(d => `<option value="${d.kode_desa}">${d.kode_desa} – ${d.nama_desa}</option>`).join('');
+  ['#f2-desa', '#f3-desa', '#f4-desa'].forEach(sel => { $(sel).innerHTML = opts; });
+  ['#f2-filter-desa', '#f3-filter-desa', '#f4-filter-desa'].forEach(sel => {
+    $(sel).innerHTML = '<option value="">Semua desa</option>' + opts;
+  });
+}
+
+// ---------------------------------------------------------------------
+// DASHBOARD
+// ---------------------------------------------------------------------
+async function refreshDashboard() {
+  const d = await getDataAkhirKabupaten();
+  const kpis = [
+    { label: 'Desa Sampel', value: d.jumlah_desa_sampel, unit: 'desa', target: 'Target 12' },
+    { label: 'Responden Survei', value: d.jumlah_responden_survei, unit: 'RT', target: 'Target 360' },
+    { label: 'Sub-sampel Timbang', value: d.jumlah_subsample_timbang, unit: 'RT', target: 'Target 120' },
+    { label: 'Rata-rata Hari Timbang', value: fmt(d.rata_rata_hari_timbang_aktual, 1), unit: 'hari', target: 'Target 8' },
+    { label: 'Organik Terverifikasi', value: fmt(d.estimasi_kg_hari, 1), unit: 'kg/hari', target: 'Output akhir' },
+    { label: 'Organik Terverifikasi', value: fmt(d.estimasi_ton_tahun, 2), unit: 'ton/tahun', target: 'Output akhir' },
+  ];
+  $('#kpi-grid').innerHTML = kpis.map(k => `
+    <div class="kpi-card">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}<span class="unit">${k.unit}</span></div>
+      <div class="target">${k.target}</div>
+    </div>`).join('');
+  const ok = d.status_kelayakan_data && d.status_kelayakan_data.startsWith('LAYAK');
+  $('#status-kelayakan-text').innerHTML = `
+    <span class="badge ${ok ? 'badge-ok' : 'badge-warn'}">${d.status_kelayakan_data}</span>
+    <p style="margin-top:10px; color:var(--ink-600); font-size:13px;">
+      Angka akhir merupakan estimasi terverifikasi berbasis survei, observasi, penimbangan 8 hari,
+      validasi praktik, dan rekonsiliasi; digunakan sebagai bahan dukungan input SIPSN/kebijakan
+      setelah disahkan daerah.
+    </p>`;
+}
+
+// ---------------------------------------------------------------------
+// FORM1: DESA
+// ---------------------------------------------------------------------
+let editingDesaKode = null;
+
+$('#form-desa').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const row = {
+    kode_desa: $('#d-kode').value.trim(),
+    nama_desa: $('#d-nama').value.trim(),
+    kecamatan: $('#d-kecamatan').value.trim(),
+    strata: $('#d-strata').value,
+    penduduk: Number($('#d-penduduk').value) || 0,
+    jumlah_rt: Number($('#d-rt').value) || 0,
+    ada_fasilitas_organik: $('#d-fasilitas').value === 'true',
+    ada_layanan_angkut: $('#d-angkut').value,
+    risiko_lingkungan: $('#d-risiko').value,
+    catatan: $('#d-catatan').value,
+  };
+  try {
+    await upsertDesa(row);
+    toast('Desa tersimpan.');
+    $('#form-desa').reset();
+    editingDesaKode = null;
+    $('#btn-desa-cancel').style.display = 'none';
+    desaCache = await listDesa();
+    fillDesaSelects();
+    await refreshDesa();
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#btn-desa-cancel').addEventListener('click', () => {
+  $('#form-desa').reset();
+  editingDesaKode = null;
+  $('#btn-desa-cancel').style.display = 'none';
+  $('#desa-form-title').textContent = 'Tambah Desa';
+});
+
+function editDesaRow(d) {
+  editingDesaKode = d.kode_desa;
+  $('#d-kode').value = d.kode_desa;
+  $('#d-nama').value = d.nama_desa;
+  $('#d-kecamatan').value = d.kecamatan || '';
+  $('#d-strata').value = d.strata;
+  $('#d-penduduk').value = d.penduduk;
+  $('#d-rt').value = d.jumlah_rt;
+  $('#d-fasilitas').value = String(d.ada_fasilitas_organik);
+  $('#d-angkut').value = d.ada_layanan_angkut || 'Tidak ada';
+  $('#d-risiko').value = d.risiko_lingkungan || 'Rendah';
+  $('#d-catatan').value = d.catatan || '';
+  $('#desa-form-title').textContent = 'Edit Desa: ' + d.kode_desa;
+  $('#btn-desa-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.editDesaRow = (kode) => editDesaRow(desaCache.find(d => d.kode_desa === kode));
+
+async function refreshDesa() {
+  desaCache = await listDesa();
+  fillDesaSelects();
+  const isAdmin = currentProfile?.role === 'admin';
+  renderTable($('#tbl-desa'), [
+    { key: 'kode_desa', label: 'Kode' },
+    { key: 'nama_desa', label: 'Nama Desa' },
+    { key: 'kecamatan', label: 'Kecamatan' },
+    { key: 'strata', label: 'Strata' },
+    { key: 'penduduk', label: 'Penduduk', render: r => fmt(r.penduduk, 0) },
+    { key: 'jumlah_rt', label: 'Jml RT', render: r => fmt(r.jumlah_rt, 0) },
+    { key: 'ada_fasilitas_organik', label: 'Fas. Organik', render: r => r.ada_fasilitas_organik ? 'Ya' : 'Tidak' },
+  ], desaCache, isAdmin ? (d => `<button class="btn btn-outline btn-sm" onclick="editDesaRow('${d.kode_desa}')">Edit</button>`) : null);
+}
+
+// ---------------------------------------------------------------------
+// FORM2: SURVEI
+// ---------------------------------------------------------------------
+$('#form-f2').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const row = {
+    id_rt: $('#f2-idrt').value.trim(),
+    kode_desa: $('#f2-desa').value,
+    tanggal: $('#f2-tanggal').value,
+    enumerator: $('#f2-enum').value,
+    jumlah_anggota: Number($('#f2-anggota').value) || null,
+    subsample_timbang: $('#f2-subsample').value === 'true',
+    q1_pengelola_sampah: $('#f2-q1').value,
+    q2_praktik_sisa_makanan: $('#f2-q2').value,
+    q3_organik_dipilah: $('#f2-q3').value,
+    q4_ada_ternak: $('#f2-q4').value,
+    q5_praktik_daun_halaman: $('#f2-q5').value,
+    q6_komposter_jogangan: $('#f2-q6').value,
+    q7_organik_bersih: $('#f2-q7').value,
+    q8_praktik_anorganik: $('#f2-q8').value,
+    q9_pembakaran: $('#f2-q9').value,
+    q10_buang_lingkungan: $('#f2-q10').value,
+    q11_layanan_angkut: $('#f2-q11').value,
+    q12_hambatan_utama: $('#f2-q12').value,
+    bukti_minimal: $('#f2-bukti').value,
+    catatan: $('#f2-catatan').value,
+  };
+  try {
+    await insertForm2(row);
+    toast('Data survei tersimpan.');
+    $('#form-f2').reset();
+    await refreshForm2();
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#f2-filter-desa').addEventListener('change', refreshForm2);
+
+async function refreshForm2() {
+  const kode = $('#f2-filter-desa').value || null;
+  const rows = await listForm2(kode);
+  renderTable($('#tbl-f2'), [
+    { key: 'id_rt', label: 'ID RT' },
+    { key: 'kode_desa', label: 'Desa' },
+    { key: 'tanggal', label: 'Tanggal' },
+    { key: 'enumerator', label: 'Enumerator' },
+    { key: 'jumlah_anggota', label: 'Anggota' },
+    { key: 'subsample_timbang', label: 'Sub-sampel', render: r => r.subsample_timbang ? '<span class="badge badge-ok">Ya</span>' : 'Tidak' },
+    { key: 'q9_pembakaran', label: 'Pembakaran' },
+    { key: 'q11_layanan_angkut', label: 'Layanan Angkut' },
+  ], rows);
+}
+
+// ---------------------------------------------------------------------
+// FORM3: PENIMBANGAN
+// ---------------------------------------------------------------------
+$('#f3-desa').addEventListener('change', fillForm3RtOptions);
+async function fillForm3RtOptions() {
+  const kode = $('#f3-desa').value;
+  const rts = await listForm2(kode);
+  $('#f3-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
+    || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
+}
+
+$('#form-f3').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const row = {
+    tanggal: $('#f3-tanggal').value,
+    hari_ke: Number($('#f3-hari').value),
+    kode_desa: $('#f3-desa').value,
+    id_rt: $('#f3-idrt').value,
+    jumlah_anggota: Number($('#f3-anggota').value) || null,
+    organik_total: Number($('#f3-organik').value) || 0,
+    anorganik_bernilai: Number($('#f3-anorganik').value) || 0,
+    residu: Number($('#f3-residu').value) || 0,
+    catatan: $('#f3-catatan').value,
+  };
+  try {
+    await insertForm3(row);
+    toast('Data timbang tersimpan.');
+    $('#form-f3').reset();
+    await refreshForm3();
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#f3-filter-desa').addEventListener('change', refreshForm3);
+
+async function refreshForm3() {
+  const kode = $('#f3-filter-desa').value || null;
+  const rows = await listForm3(kode);
+  renderTable($('#tbl-f3'), [
+    { key: 'tanggal', label: 'Tanggal' },
+    { key: 'hari_ke', label: 'Hari' },
+    { key: 'kode_desa', label: 'Desa' },
+    { key: 'id_rt', label: 'ID RT' },
+    { key: 'organik_total', label: 'Organik (kg)', render: r => fmt(r.organik_total) },
+    { key: 'anorganik_bernilai', label: 'Anorganik (kg)', render: r => fmt(r.anorganik_bernilai) },
+    { key: 'residu', label: 'Residu (kg)', render: r => fmt(r.residu) },
+    { key: 'total_sampah', label: 'Total (kg)', render: r => fmt(r.total_sampah) },
+  ], rows);
+}
+
+// ---------------------------------------------------------------------
+// FORM4: VALIDASI
+// ---------------------------------------------------------------------
+$('#f4-desa').addEventListener('change', fillForm4RtOptions);
+async function fillForm4RtOptions() {
+  const kode = $('#f4-desa').value;
+  const rts = await listForm2(kode);
+  $('#f4-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
+    || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
+}
+
+$('#form-f4').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const row = {
+    tanggal: $('#f4-tanggal').value,
+    hari_ke: Number($('#f4-hari').value),
+    kode_desa: $('#f4-desa').value,
+    id_rt: $('#f4-idrt').value,
+    organik_terukur: Number($('#f4-terukur').value) || 0,
+    o1: Number($('#f4-o1').value) || 0,
+    o2: Number($('#f4-o2').value) || 0,
+    o3: Number($('#f4-o3').value) || 0,
+    o4: Number($('#f4-o4').value) || 0,
+    o5: Number($('#f4-o5').value) || 0,
+    r1: Number($('#f4-r1').value) || 0,
+    r2: Number($('#f4-r2').value) || 0,
+    r3: Number($('#f4-r3').value) || 0,
+    r4: Number($('#f4-r4').value) || 0,
+    bukti_wawancara: $('#f4-bw').value === 'true',
+    bukti_observasi: $('#f4-bo').value === 'true',
+    bukti_timbang: $('#f4-bt').value === 'true',
+    bukti_foto_logbook: $('#f4-bf').value === 'true',
+    catatan: $('#f4-catatan').value,
+  };
+  try {
+    await insertForm4(row);
+    toast('Data validasi tersimpan.');
+    $('#form-f4').reset();
+    await refreshForm4();
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#f4-filter-desa').addEventListener('change', refreshForm4);
+
+async function refreshForm4() {
+  const klas = await listKlasifikasiPraktik();
+  renderTable($('#tbl-klasifikasi'), [
+    { key: 'kode', label: 'Kode' },
+    { key: 'praktik', label: 'Praktik' },
+    { key: 'status_penghitungan', label: 'Status' },
+    { key: 'faktor_praktek', label: 'Faktor', render: r => fmt(r.faktor_praktek, 1) },
+  ], klas);
+
+  const kode = $('#f4-filter-desa').value || null;
+  const rows = await listForm4(kode);
+  renderTable($('#tbl-f4'), [
+    { key: 'tanggal', label: 'Tanggal' },
+    { key: 'id_rt', label: 'ID RT' },
+    { key: 'organik_terukur', label: 'Terukur (kg)', render: r => fmt(r.organik_terukur) },
+    { key: 'total_rincian', label: 'Rincian (kg)', render: r => fmt(r.total_rincian) },
+    { key: 'selisih', label: 'Selisih (kg)', render: r => fmt(r.selisih) },
+    { key: 'faktor_bukti', label: 'Faktor Bukti', render: r => fmt(r.faktor_bukti, 2) },
+    { key: 'organik_terkoreksi', label: 'Terkoreksi (kg)', render: r => fmt(r.organik_terkoreksi) },
+    { key: 'status_rekonsiliasi', label: 'Status', render: r => `<span class="badge ${r.status_rekonsiliasi === 'OK' ? 'badge-ok' : 'badge-danger'}">${r.status_rekonsiliasi}</span>` },
+  ], rows);
+}
+
+// ---------------------------------------------------------------------
+// REKAP DESA / TIPOLOGI
+// ---------------------------------------------------------------------
+async function refreshRekapDesa() {
+  const rows = await getRekapDesa();
+  renderTable($('#tbl-rekapdesa'), [
+    { key: 'kode_desa', label: 'Kode' },
+    { key: 'nama_desa', label: 'Desa' },
+    { key: 'tipologi', label: 'Tipologi' },
+    { key: 'responden_survei', label: 'Responden', render: r => fmt(r.responden_survei, 0) },
+    { key: 'subsample_timbang', label: 'Sub-sampel', render: r => fmt(r.subsample_timbang, 0) },
+    { key: 'hari_timbang_aktual', label: 'Hari Timbang', render: r => fmt(r.hari_timbang_aktual, 1) },
+    { key: 'organik_terukur_kg', label: 'Terukur (kg)', render: r => fmt(r.organik_terukur_kg) },
+    { key: 'organik_terkoreksi_kg', label: 'Terkoreksi (kg)', render: r => fmt(r.organik_terkoreksi_kg) },
+    { key: 'rasio_rekonsiliasi_ok', label: 'Rasio OK', render: r => pct(r.rasio_rekonsiliasi_ok) },
+    { key: 'estimasi_terverifikasi_kg_hari', label: 'Estimasi (kg/hari)', render: r => fmt(r.estimasi_terverifikasi_kg_hari, 1) },
+    { key: 'estimasi_terverifikasi_ton_tahun', label: 'Estimasi (ton/thn)', render: r => fmt(r.estimasi_terverifikasi_ton_tahun, 2) },
+    { key: 'status_kelayakan', label: 'Status', render: r => `<span class="badge ${r.status_kelayakan?.startsWith('LAYAK') ? 'badge-ok' : 'badge-warn'}">${r.status_kelayakan}</span>` },
+  ], rows);
+}
+
+async function refreshRekapTipologi() {
+  const rows = await getRekapTipologi();
+  renderTable($('#tbl-rekaptipologi'), [
+    { key: 'tipologi', label: 'Tipologi' },
+    { key: 'jumlah_desa', label: 'Jml Desa', render: r => fmt(r.jumlah_desa, 0) },
+    { key: 'penduduk', label: 'Penduduk', render: r => fmt(r.penduduk, 0) },
+    { key: 'responden_survei', label: 'Responden', render: r => fmt(r.responden_survei, 0) },
+    { key: 'subsample_timbang', label: 'Sub-sampel', render: r => fmt(r.subsample_timbang, 0) },
+    { key: 'estimasi_terverifikasi_kg_hari', label: 'Estimasi (kg/hari)', render: r => fmt(r.estimasi_terverifikasi_kg_hari, 1) },
+    { key: 'estimasi_terverifikasi_ton_tahun', label: 'Estimasi (ton/thn)', render: r => fmt(r.estimasi_terverifikasi_ton_tahun, 2) },
+    { key: 'kg_org_hari_tertimbang', label: 'kg/org/hari', render: r => fmt(r.kg_org_hari_tertimbang, 3) },
+    { key: 'status', label: 'Status', render: r => `<span class="badge ${r.status === 'LAYAK' ? 'badge-ok' : 'badge-warn'}">${r.status}</span>` },
+  ], rows);
+}
+
+// ---------------------------------------------------------------------
+// BOOT
+// ---------------------------------------------------------------------
+(async () => {
+  const session = await getSession();
+  if (session) await enterApp();
+})();
+</script>
+</body>
+</html>
