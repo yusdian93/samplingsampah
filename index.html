@@ -323,6 +323,7 @@
       <button data-tab="form4"><span class="dot"></span>Validasi &amp; Rekonsiliasi</button>
       <button data-tab="rekapdesa"><span class="dot"></span>Rekap Desa</button>
       <button data-tab="rekaptipologi"><span class="dot"></span>Rekap Tipologi</button>
+      <button data-tab="petugas" id="nav-petugas" style="display:none;"><span class="dot"></span>Kelola Petugas</button>
     </nav>
     <div class="side-foot">
       <div class="name" id="side-username">–</div>
@@ -462,7 +463,7 @@
         <p>Dicatat harian untuk setiap RT sub-sampel: organik, anorganik bernilai, dan residu.</p>
       </div>
       <div class="card">
-        <h3>Tambah Data Timbang Harian</h3>
+        <h3 id="f3-form-title">Tambah Data Timbang Harian</h3>
         <form id="form-f3">
           <div class="form-grid">
             <div class="field"><label>Tanggal</label><input type="date" id="f3-tanggal" required /></div>
@@ -475,7 +476,10 @@
             <div class="field"><label>Residu (kg)</label><input type="number" step="0.01" id="f3-residu" /></div>
             <div class="field wide"><label>Catatan</label><input type="text" id="f3-catatan" /></div>
           </div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Timbang</button></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="f3-submit-btn">Simpan Timbang</button>
+            <button class="btn btn-outline" type="button" id="btn-f3-cancel" style="display:none;">Batal Edit</button>
+          </div>
         </form>
       </div>
       <div class="card">
@@ -498,7 +502,7 @@
         <div class="table-wrap"><table id="tbl-klasifikasi"><thead></thead><tbody></tbody></table></div>
       </div>
       <div class="card">
-        <h3>Tambah Data Validasi</h3>
+        <h3 id="f4-form-title">Tambah Data Validasi</h3>
         <form id="form-f4">
           <div class="form-grid">
             <div class="field"><label>Tanggal</label><input type="date" id="f4-tanggal" required /></div>
@@ -522,7 +526,10 @@
             <div class="field wide"><label>Catatan</label><input type="text" id="f4-catatan" /></div>
           </div>
           <p class="hint">Faktor bukti, total rincian, selisih, organik terkoreksi, dan status rekonsiliasi dihitung otomatis oleh database setelah data disimpan.</p>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">Simpan Validasi</button></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="f4-submit-btn">Simpan Validasi</button>
+            <button class="btn btn-outline" type="button" id="btn-f4-cancel" style="display:none;">Batal Edit</button>
+          </div>
         </form>
       </div>
       <div class="card">
@@ -551,6 +558,15 @@
       </div>
       <div class="card"><div class="table-wrap"><table id="tbl-rekaptipologi"><thead></thead><tbody></tbody></table></div></div>
     </section>
+
+    <!-- KELOLA PETUGAS (ADMIN) -->
+    <section class="page" id="page-petugas">
+      <div class="page-head">
+        <h2>Kelola Petugas</h2>
+        <p>Atur hak akses tiap akun. <strong>User</strong> hanya bisa mengisi form &amp; melihat rekap. <strong>Admin</strong> juga bisa mengatur Profil Desa dan mengubah role petugas lain.</p>
+      </div>
+      <div class="card"><div class="table-wrap"><table id="tbl-petugas"><thead></thead><tbody></tbody></table></div></div>
+    </section>
   </main>
 </div>
 
@@ -560,11 +576,12 @@
 import {
   supabase, signIn, signUp, signOut, getSession, onAuthChange, getMyProfile,
   listParameter, listKlasifikasiPraktik,
-  listDesa, upsertDesa,
+  listDesa, upsertDesa, deleteDesa,
   listForm2, insertForm2, updateForm2, deleteForm2,
-  listForm3, insertForm3,
-  listForm4, insertForm4,
+  listForm3, insertForm3, updateForm3, deleteForm3,
+  listForm4, insertForm4, updateForm4, deleteForm4,
   getRekapDesa, getRekapTipologi, getDataAkhirKabupaten,
+  listProfiles, updateProfileRole,
 } from './supabase-adapter.js';
 
 // ---------------------------------------------------------------------
@@ -656,6 +673,7 @@ async function enterApp() {
   $('#side-username').textContent = currentProfile?.full_name || 'Petugas';
   $('#side-role').textContent = currentProfile?.role === 'admin' ? 'Admin' : 'Enumerator';
   $('#card-form-desa').style.display = currentProfile?.role === 'admin' ? 'block' : 'none';
+  $('#nav-petugas').style.display = currentProfile?.role === 'admin' ? 'flex' : 'none';
   await loadAllReferenceData();
   await refreshCurrentTab();
 }
@@ -671,6 +689,7 @@ const tabRefreshers = {
   form4: refreshForm4,
   rekapdesa: refreshRekapDesa,
   rekaptipologi: refreshRekapTipologi,
+  petugas: refreshPetugas,
 };
 let currentTab = 'dashboard';
 
@@ -793,6 +812,17 @@ function editDesaRow(d) {
 }
 window.editDesaRow = (kode) => editDesaRow(desaCache.find(d => d.kode_desa === kode));
 
+async function deleteDesaRow(kode) {
+  if (!confirm(`Hapus desa ${kode}? Ini akan gagal jika masih ada data survei/timbang/validasi yang terkait desa ini.`)) return;
+  try {
+    await deleteDesa(kode);
+    toast('Desa dihapus.');
+    if (editingDesaKode === kode) $('#btn-desa-cancel').click();
+    await refreshDesa();
+  } catch (err) { toast(err.message, true); }
+}
+window.deleteDesaRow = deleteDesaRow;
+
 async function refreshDesa() {
   desaCache = await listDesa();
   fillDesaSelects();
@@ -805,7 +835,11 @@ async function refreshDesa() {
     { key: 'penduduk', label: 'Penduduk', render: r => fmt(r.penduduk, 0) },
     { key: 'jumlah_rt', label: 'Jml RT', render: r => fmt(r.jumlah_rt, 0) },
     { key: 'ada_fasilitas_organik', label: 'Fas. Organik', render: r => r.ada_fasilitas_organik ? 'Ya' : 'Tidak' },
-  ], desaCache, isAdmin ? (d => `<button class="btn btn-outline btn-sm" onclick="editDesaRow('${d.kode_desa}')">Edit</button>`) : null);
+  ], desaCache, isAdmin ? (d => `
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" onclick="editDesaRow('${d.kode_desa}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteDesaRow('${d.kode_desa}')">Hapus</button>
+    </div>`) : null);
 }
 
 // ---------------------------------------------------------------------
@@ -951,13 +985,66 @@ async function refreshForm2() {
 // ---------------------------------------------------------------------
 // FORM3: PENIMBANGAN
 // ---------------------------------------------------------------------
+let editingForm3Id = null;
+let form3Cache = [];
+
 $('#f3-desa').addEventListener('change', fillForm3RtOptions);
-async function fillForm3RtOptions() {
+async function fillForm3RtOptions(preselectIdRt = null) {
   const kode = $('#f3-desa').value;
   const rts = await listForm2(kode);
   $('#f3-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
+  if (preselectIdRt) $('#f3-idrt').value = preselectIdRt;
 }
+
+function resetForm3Form() {
+  $('#form-f3').reset();
+  editingForm3Id = null;
+  $('#f3-form-title').textContent = 'Tambah Data Timbang Harian';
+  $('#f3-submit-btn').textContent = 'Simpan Timbang';
+  $('#btn-f3-cancel').style.display = 'none';
+  $('#f3-desa').disabled = false;
+  $('#f3-idrt').disabled = false;
+  $('#f3-hari').disabled = false;
+}
+$('#btn-f3-cancel').addEventListener('click', resetForm3Form);
+
+async function editForm3Row(id) {
+  const r = form3Cache.find(x => x.id === id);
+  if (!r) return;
+  $('#f3-tanggal').value = r.tanggal || '';
+  $('#f3-hari').value = r.hari_ke;
+  $('#f3-desa').value = r.kode_desa;
+  await fillForm3RtOptions(r.id_rt);
+  $('#f3-anggota').value = r.jumlah_anggota ?? '';
+  $('#f3-organik').value = r.organik_total;
+  $('#f3-anorganik').value = r.anorganik_bernilai;
+  $('#f3-residu').value = r.residu;
+  $('#f3-catatan').value = r.catatan || '';
+  // kunci field kunci (desa/RT/hari) agar tidak melanggar batasan unik id_rt+hari_ke
+  $('#f3-desa').disabled = true;
+  $('#f3-idrt').disabled = true;
+  $('#f3-hari').disabled = true;
+  editingForm3Id = r.id;
+  $('#f3-form-title').textContent = `Edit Timbang: ${r.id_rt} · Hari ${r.hari_ke}`;
+  $('#f3-submit-btn').textContent = 'Simpan Perubahan';
+  $('#btn-f3-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.editForm3Row = editForm3Row;
+
+async function deleteForm3Row(id) {
+  const r = form3Cache.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Hapus data timbang ${r.id_rt} hari ke-${r.hari_ke}?`)) return;
+  try {
+    await deleteForm3(id);
+    toast('Data timbang dihapus.');
+    if (editingForm3Id === id) resetForm3Form();
+    await refreshForm3();
+  } catch (err) { toast(err.message, true); }
+}
+window.deleteForm3Row = deleteForm3Row;
 
 $('#form-f3').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -973,9 +1060,15 @@ $('#form-f3').addEventListener('submit', async (e) => {
     catatan: $('#f3-catatan').value,
   };
   try {
-    await insertForm3(row);
-    toast('Data timbang tersimpan.');
-    $('#form-f3').reset();
+    if (editingForm3Id) {
+      const { kode_desa, id_rt, hari_ke, ...editableRow } = row;
+      await updateForm3(editingForm3Id, editableRow);
+      toast('Perubahan data timbang tersimpan.');
+    } else {
+      await insertForm3(row);
+      toast('Data timbang tersimpan.');
+    }
+    resetForm3Form();
     await refreshForm3();
   } catch (err) { toast(err.message, true); }
 });
@@ -984,7 +1077,7 @@ $('#f3-filter-desa').addEventListener('change', refreshForm3);
 
 async function refreshForm3() {
   const kode = $('#f3-filter-desa').value || null;
-  const rows = await listForm3(kode);
+  form3Cache = await listForm3(kode);
   renderTable($('#tbl-f3'), [
     { key: 'tanggal', label: 'Tanggal' },
     { key: 'hari_ke', label: 'Hari' },
@@ -994,19 +1087,85 @@ async function refreshForm3() {
     { key: 'anorganik_bernilai', label: 'Anorganik (kg)', render: r => fmt(r.anorganik_bernilai) },
     { key: 'residu', label: 'Residu (kg)', render: r => fmt(r.residu) },
     { key: 'total_sampah', label: 'Total (kg)', render: r => fmt(r.total_sampah) },
-  ], rows);
+  ], form3Cache, r => `
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" onclick="editForm3Row('${r.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteForm3Row('${r.id}')">Hapus</button>
+    </div>`);
 }
 
 // ---------------------------------------------------------------------
 // FORM4: VALIDASI
 // ---------------------------------------------------------------------
 $('#f4-desa').addEventListener('change', fillForm4RtOptions);
-async function fillForm4RtOptions() {
+async function fillForm4RtOptions(preselectIdRt = null) {
   const kode = $('#f4-desa').value;
   const rts = await listForm2(kode);
   $('#f4-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
+  if (preselectIdRt) $('#f4-idrt').value = preselectIdRt;
 }
+
+let editingForm4Id = null;
+let form4Cache = [];
+
+function resetForm4Form() {
+  $('#form-f4').reset();
+  editingForm4Id = null;
+  $('#f4-form-title').textContent = 'Tambah Data Validasi';
+  $('#f4-submit-btn').textContent = 'Simpan Validasi';
+  $('#btn-f4-cancel').style.display = 'none';
+  $('#f4-desa').disabled = false;
+  $('#f4-idrt').disabled = false;
+  $('#f4-hari').disabled = false;
+}
+$('#btn-f4-cancel').addEventListener('click', resetForm4Form);
+
+async function editForm4Row(id) {
+  const r = form4Cache.find(x => x.id === id);
+  if (!r) return;
+  $('#f4-tanggal').value = r.tanggal || '';
+  $('#f4-hari').value = r.hari_ke;
+  $('#f4-desa').value = r.kode_desa;
+  await fillForm4RtOptions(r.id_rt);
+  $('#f4-terukur').value = r.organik_terukur;
+  $('#f4-o1').value = r.o1;
+  $('#f4-o2').value = r.o2;
+  $('#f4-o3').value = r.o3;
+  $('#f4-o4').value = r.o4;
+  $('#f4-o5').value = r.o5;
+  $('#f4-r1').value = r.r1;
+  $('#f4-r2').value = r.r2;
+  $('#f4-r3').value = r.r3;
+  $('#f4-r4').value = r.r4;
+  $('#f4-bw').value = String(r.bukti_wawancara);
+  $('#f4-bo').value = String(r.bukti_observasi);
+  $('#f4-bt').value = String(r.bukti_timbang);
+  $('#f4-bf').value = String(r.bukti_foto_logbook);
+  $('#f4-catatan').value = r.catatan || '';
+  $('#f4-desa').disabled = true;
+  $('#f4-idrt').disabled = true;
+  $('#f4-hari').disabled = true;
+  editingForm4Id = r.id;
+  $('#f4-form-title').textContent = `Edit Validasi: ${r.id_rt} · Hari ${r.hari_ke}`;
+  $('#f4-submit-btn').textContent = 'Simpan Perubahan';
+  $('#btn-f4-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.editForm4Row = editForm4Row;
+
+async function deleteForm4Row(id) {
+  const r = form4Cache.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Hapus data validasi ${r.id_rt} hari ke-${r.hari_ke}?`)) return;
+  try {
+    await deleteForm4(id);
+    toast('Data validasi dihapus.');
+    if (editingForm4Id === id) resetForm4Form();
+    await refreshForm4();
+  } catch (err) { toast(err.message, true); }
+}
+window.deleteForm4Row = deleteForm4Row;
 
 $('#form-f4').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1032,9 +1191,15 @@ $('#form-f4').addEventListener('submit', async (e) => {
     catatan: $('#f4-catatan').value,
   };
   try {
-    await insertForm4(row);
-    toast('Data validasi tersimpan.');
-    $('#form-f4').reset();
+    if (editingForm4Id) {
+      const { kode_desa, id_rt, hari_ke, ...editableRow } = row;
+      await updateForm4(editingForm4Id, editableRow);
+      toast('Perubahan data validasi tersimpan.');
+    } else {
+      await insertForm4(row);
+      toast('Data validasi tersimpan.');
+    }
+    resetForm4Form();
     await refreshForm4();
   } catch (err) { toast(err.message, true); }
 });
@@ -1051,7 +1216,7 @@ async function refreshForm4() {
   ], klas);
 
   const kode = $('#f4-filter-desa').value || null;
-  const rows = await listForm4(kode);
+  form4Cache = await listForm4(kode);
   renderTable($('#tbl-f4'), [
     { key: 'tanggal', label: 'Tanggal' },
     { key: 'id_rt', label: 'ID RT' },
@@ -1061,7 +1226,11 @@ async function refreshForm4() {
     { key: 'faktor_bukti', label: 'Faktor Bukti', render: r => fmt(r.faktor_bukti, 2) },
     { key: 'organik_terkoreksi', label: 'Terkoreksi (kg)', render: r => fmt(r.organik_terkoreksi) },
     { key: 'status_rekonsiliasi', label: 'Status', render: r => `<span class="badge ${r.status_rekonsiliasi === 'OK' ? 'badge-ok' : 'badge-danger'}">${r.status_rekonsiliasi}</span>` },
-  ], rows);
+  ], form4Cache, r => `
+    <div class="row-actions">
+      <button class="btn btn-outline btn-sm" onclick="editForm4Row('${r.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteForm4Row('${r.id}')">Hapus</button>
+    </div>`);
 }
 
 // ---------------------------------------------------------------------
@@ -1098,6 +1267,45 @@ async function refreshRekapTipologi() {
     { key: 'kg_org_hari_tertimbang', label: 'kg/org/hari', render: r => fmt(r.kg_org_hari_tertimbang, 3) },
     { key: 'status', label: 'Status', render: r => `<span class="badge ${r.status === 'LAYAK' ? 'badge-ok' : 'badge-warn'}">${r.status}</span>` },
   ], rows);
+}
+
+// ---------------------------------------------------------------------
+// KELOLA PETUGAS (ADMIN)
+// ---------------------------------------------------------------------
+async function changePetugasRole(id, newRole) {
+  try {
+    await updateProfileRole(id, newRole);
+    toast('Role petugas diperbarui.');
+    await refreshPetugas();
+  } catch (err) { toast(err.message, true); }
+}
+window.changePetugasRole = changePetugasRole;
+
+async function refreshPetugas() {
+  const rows = await listProfiles();
+  const thead = $('#tbl-petugas thead');
+  const tbody = $('#tbl-petugas tbody');
+  thead.innerHTML = '<tr><th>Nama</th><th>Email</th><th>Role</th><th>Terdaftar</th></tr>';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada petugas.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const isSelf = r.id === currentProfile?.id;
+    return `
+      <tr>
+        <td>${r.full_name || '–'}${isSelf ? ' <span class="hint">(akun Anda)</span>' : ''}</td>
+        <td>${r.email || '–'}</td>
+        <td>
+          <select ${isSelf ? 'disabled title="Tidak bisa ubah role akun sendiri"' : ''}
+                  onchange="changePetugasRole('${r.id}', this.value)">
+            <option value="enumerator" ${r.role === 'enumerator' ? 'selected' : ''}>User (Enumerator)</option>
+            <option value="admin" ${r.role === 'admin' ? 'selected' : ''}>Admin</option>
+          </select>
+        </td>
+        <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '–'}</td>
+      </tr>`;
+  }).join('');
 }
 
 // ---------------------------------------------------------------------

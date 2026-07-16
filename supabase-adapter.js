@@ -55,6 +55,21 @@ export async function getMyProfile() {
 }
 
 // ---------------------------------------------------------------------
+// KELOLA PETUGAS (khusus admin — mengubah role user/admin)
+// ---------------------------------------------------------------------
+export async function listProfiles() {
+  const { data, error } = await supabase.from('profiles').select('*').order('full_name');
+  if (error) throw error;
+  return data;
+}
+
+export async function updateProfileRole(id, role) {
+  const { data, error } = await supabase.from('profiles').update({ role }).eq('id', id).select();
+  if (error) throw error;
+  return data;
+}
+
+// ---------------------------------------------------------------------
 // PARAMETER & KLASIFIKASI PRAKTIK (referensi, umumnya hanya dibaca)
 // ---------------------------------------------------------------------
 export async function listParameter() {
