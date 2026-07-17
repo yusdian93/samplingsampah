@@ -328,12 +328,14 @@
     <div class="brand-title">Sampling Tulungagung</div>
     <nav class="tabs" id="nav-tabs">
       <button data-tab="dashboard" class="active"><span class="dot"></span>Dashboard</button>
+      <button data-tab="panduan"><span class="dot"></span>Panduan Alur</button>
       <button data-tab="desa"><span class="dot"></span>Profil Desa</button>
       <button data-tab="form2"><span class="dot"></span>Survei 12Q</button>
       <button data-tab="form3"><span class="dot"></span>Penimbangan 8 Hari</button>
       <button data-tab="form4"><span class="dot"></span>Validasi &amp; Rekonsiliasi</button>
       <button data-tab="rekapdesa"><span class="dot"></span>Rekap Desa</button>
       <button data-tab="rekaptipologi"><span class="dot"></span>Rekap Tipologi</button>
+      <button data-tab="dataakhir"><span class="dot"></span>Data Akhir Kabupaten</button>
       <button data-tab="cetak"><span class="dot"></span>Cetak Laporan</button>
       <button data-tab="petugas" id="nav-petugas" style="display:none;"><span class="dot"></span>Kelola Petugas</button>
     </nav>
@@ -359,6 +361,75 @@
       <div class="card">
         <h3>Status Kelayakan Data</h3>
         <p id="status-kelayakan-text" class="empty">Memuat…</p>
+      </div>
+    </section>
+
+    <!-- PANDUAN ALUR -->
+    <section class="page" id="page-panduan">
+      <div class="page-head">
+        <h2>Panduan Alur Aplikasi</h2>
+        <p>Urutan pengisian dan fungsi tiap menu — mengikuti alur metodologi sampling timbulan sampah organik Kabupaten Tulungagung.</p>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="tbl-panduan">
+            <thead><tr><th>Menu</th><th>Contoh Isi</th><th>Tujuan / Catatan</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>FORM1 – Profil Desa</strong></td>
+                <td>12 desa dalam 4 strata</td>
+                <td>Menetapkan desain sampling.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('desa')">Buka</button></td>
+              </tr>
+              <tr>
+                <td><strong>FORM2 – Survei Observasi 12Q</strong></td>
+                <td>30 responden per desa</td>
+                <td>Menunjukkan 12 pertanyaan inti.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('form2')">Buka</button></td>
+              </tr>
+              <tr>
+                <td><strong>FORM3 – Penimbangan 8 Hari</strong></td>
+                <td>10 RT × 8 hari</td>
+                <td>Koreksi menjadi 8 hari.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('form3')">Buka</button></td>
+              </tr>
+              <tr>
+                <td rowspan="2"><strong>FORM4 – Validasi &amp; Rekap</strong></td>
+                <td>O1–O5 dan R1–R4</td>
+                <td>Memisahkan praktik yang dihitung dan tidak dihitung.</td>
+                <td rowspan="2"><button class="btn btn-outline btn-sm" onclick="goToTab('form4')">Buka</button></td>
+              </tr>
+              <tr>
+                <td>Selisih dan status rekonsiliasi</td>
+                <td>Cegah double counting.</td>
+              </tr>
+              <tr>
+                <td><strong>Rekap Desa</strong></td>
+                <td>Estimasi kg/hari dan ton/tahun</td>
+                <td>Agregat otomatis dari seluruh data detail tiap desa.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('rekapdesa')">Buka</button></td>
+              </tr>
+              <tr>
+                <td><strong>Rekap Tipologi (Strata)</strong></td>
+                <td>Rekap 4 strata</td>
+                <td>Masing-masing strata berisi 3 desa.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('rekaptipologi')">Buka</button></td>
+              </tr>
+              <tr>
+                <td><strong>Data Akhir Kabupaten</strong></td>
+                <td>Total akhir</td>
+                <td>Disebut estimasi terverifikasi.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('dataakhir')">Buka</button></td>
+              </tr>
+              <tr>
+                <td><strong>Dashboard</strong></td>
+                <td>KPI ringkas</td>
+                <td>Membantu membaca output secara cepat.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="goToTab('dashboard')">Buka</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -593,6 +664,20 @@
       <div class="card"><div class="table-wrap"><table id="tbl-rekaptipologi"><thead></thead><tbody></tbody></table></div></div>
     </section>
 
+    <!-- DATA AKHIR KABUPATEN -->
+    <section class="page" id="page-dataakhir">
+      <div class="page-head">
+        <h2>Data Akhir Kabupaten</h2>
+        <p>Total keseluruhan tingkat kabupaten — angka ini yang disebut <strong>estimasi terverifikasi</strong>, hasil agregasi seluruh Rekap Desa.</p>
+      </div>
+      <div class="card">
+        <div class="table-wrap"><table id="tbl-dataakhir"><thead><tr><th>Indikator</th><th>Nilai</th></tr></thead><tbody></tbody></table></div>
+        <div class="form-actions" style="margin-top:16px;">
+          <button class="btn btn-outline" onclick="printReport('dataakhir')">🖨️ Cetak Data Akhir Kabupaten</button>
+        </div>
+      </div>
+    </section>
+
     <!-- CETAK LAPORAN -->
     <section class="page" id="page-cetak">
       <div class="page-head">
@@ -778,6 +863,7 @@ const tabRefreshers = {
   form4: refreshForm4,
   rekapdesa: refreshRekapDesa,
   rekaptipologi: refreshRekapTipologi,
+  dataakhir: refreshDataAkhir,
   petugas: refreshPetugas,
 };
 let currentTab = 'dashboard';
@@ -792,6 +878,13 @@ $$('#nav-tabs button').forEach(btn => {
     refreshCurrentTab().then(updateLastRefreshLabel);
   });
 });
+
+// Dipakai tombol "Buka" di halaman Panduan Alur untuk lompat ke menu terkait
+function goToTab(tabName) {
+  const btn = document.querySelector(`#nav-tabs button[data-tab="${tabName}"]`);
+  if (btn) btn.click();
+}
+window.goToTab = goToTab;
 
 async function refreshCurrentTab() {
   try { await tabRefreshers[currentTab]?.(); }
@@ -1473,6 +1566,41 @@ async function refreshRekapTipologi() {
 }
 
 // ---------------------------------------------------------------------
+// DATA AKHIR KABUPATEN
+// ---------------------------------------------------------------------
+function buildDataAkhirRows(d) {
+  return [
+    { k: 'Jumlah Strata', v: fmt(d.jumlah_strata, 0) },
+    { k: 'Jumlah Desa Sampel', v: fmt(d.jumlah_desa_sampel, 0) },
+    { k: 'Jumlah Responden Survei', v: fmt(d.jumlah_responden_survei, 0) },
+    { k: 'Jumlah Sub-sampel Timbang', v: fmt(d.jumlah_subsample_timbang, 0) },
+    { k: 'Hari Penimbangan Ditetapkan', v: fmt(d.hari_penimbangan_ditetapkan, 0) },
+    { k: 'Rata-rata Hari Timbang Aktual', v: fmt(d.rata_rata_hari_timbang_aktual, 2) },
+    { k: 'Total Penduduk Desa Sampel', v: fmt(d.total_penduduk_desa_sampel, 0) },
+    { k: 'Total Organik Terukur (kg)', v: fmt(d.total_organik_terukur) },
+    { k: 'Total Organik Terkoreksi (kg)', v: fmt(d.total_organik_terkoreksi) },
+    { k: 'Faktor Verifikasi Tertimbang Kabupaten', v: fmt(d.faktor_verifikasi_tertimbang_kabupaten, 3) },
+    { k: 'Rata-rata Organik Terkoreksi (kg/org/hari)', v: fmt(d.rata_rata_organik_terkoreksi_kg_org_hari, 3) },
+    { k: 'Estimasi (kg/hari)', v: fmt(d.estimasi_kg_hari, 1) },
+    { k: 'Estimasi (ton/tahun)', v: fmt(d.estimasi_ton_tahun, 2) },
+    { k: 'Status Kelayakan Data', v: d.status_kelayakan_data },
+  ];
+}
+
+async function refreshDataAkhir() {
+  const d = await getDataAkhirKabupaten();
+  const rows = buildDataAkhirRows(d);
+  const tbody = $('#tbl-dataakhir tbody');
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.k}</td>
+      <td>${r.k === 'Status Kelayakan Data'
+        ? `<span class="badge ${String(r.v).startsWith('LAYAK') ? 'badge-ok' : 'badge-warn'}">${r.v}</span>`
+        : `<strong>${r.v}</strong>`}</td>
+    </tr>`).join('');
+}
+
+// ---------------------------------------------------------------------
 // KELOLA PETUGAS (ADMIN)
 // ---------------------------------------------------------------------
 $('#form-petugas-baru').addEventListener('submit', async (e) => {
@@ -1724,22 +1852,7 @@ async function printReport(type) {
     } else if (type === 'dataakhir') {
       title = 'DATA AKHIR KABUPATEN';
       const d = await getDataAkhirKabupaten();
-      const rows = [
-        { k: 'Jumlah Strata', v: fmt(d.jumlah_strata, 0) },
-        { k: 'Jumlah Desa Sampel', v: fmt(d.jumlah_desa_sampel, 0) },
-        { k: 'Jumlah Responden Survei', v: fmt(d.jumlah_responden_survei, 0) },
-        { k: 'Jumlah Sub-sampel Timbang', v: fmt(d.jumlah_subsample_timbang, 0) },
-        { k: 'Hari Penimbangan Ditetapkan', v: fmt(d.hari_penimbangan_ditetapkan, 0) },
-        { k: 'Rata-rata Hari Timbang Aktual', v: fmt(d.rata_rata_hari_timbang_aktual, 2) },
-        { k: 'Total Penduduk Desa Sampel', v: fmt(d.total_penduduk_desa_sampel, 0) },
-        { k: 'Total Organik Terukur (kg)', v: fmt(d.total_organik_terukur) },
-        { k: 'Total Organik Terkoreksi (kg)', v: fmt(d.total_organik_terkoreksi) },
-        { k: 'Faktor Verifikasi Tertimbang Kabupaten', v: fmt(d.faktor_verifikasi_tertimbang_kabupaten, 3) },
-        { k: 'Rata-rata Organik Terkoreksi (kg/org/hari)', v: fmt(d.rata_rata_organik_terkoreksi_kg_org_hari, 3) },
-        { k: 'Estimasi (kg/hari)', v: fmt(d.estimasi_kg_hari, 1) },
-        { k: 'Estimasi (ton/tahun)', v: fmt(d.estimasi_ton_tahun, 2) },
-        { k: 'Status Kelayakan Data', v: d.status_kelayakan_data },
-      ];
+      const rows = buildDataAkhirRows(d);
       bodyHtml = buildPrintTable([{ key: 'k', label: 'Indikator' }, { key: 'v', label: 'Nilai' }], rows);
 
     } else if (type === 'dashboard') {
