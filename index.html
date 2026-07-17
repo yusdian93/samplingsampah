@@ -517,23 +517,37 @@
             <div class="field"><label>Hari Ke (1-8)</label><input type="number" id="f4-hari" min="1" max="8" required /></div>
             <div class="field"><label>Kode Desa</label><select id="f4-desa" required></select></div>
             <div class="field"><label>ID RT</label><select id="f4-idrt" required></select></div>
-            <div class="field"><label>Organik Terukur (kg)</label><input type="number" step="0.01" id="f4-terukur" required /></div>
-            <div class="field"><label>O1 – Pakan ternak (kg)</label><input type="number" step="0.01" id="f4-o1" value="0" /></div>
-            <div class="field"><label>O2 – Kompos RT (kg)</label><input type="number" step="0.01" id="f4-o2" value="0" /></div>
-            <div class="field"><label>O3 – Kompos komunal (kg)</label><input type="number" step="0.01" id="f4-o3" value="0" /></div>
-            <div class="field"><label>O4 – Jogangan bersih (kg)</label><input type="number" step="0.01" id="f4-o4" value="0" /></div>
-            <div class="field"><label>O5 – Serasah dikelola (kg)</label><input type="number" step="0.01" id="f4-o5" value="0" /></div>
-            <div class="field"><label>R1 – Campur+angkut (kg)</label><input type="number" step="0.01" id="f4-r1" value="0" /></div>
-            <div class="field"><label>R2 – Dibakar (kg)</label><input type="number" step="0.01" id="f4-r2" value="0" /></div>
-            <div class="field"><label>R3 – Dibuang lingkungan (kg)</label><input type="number" step="0.01" id="f4-r3" value="0" /></div>
-            <div class="field"><label>R4 – Belum terverifikasi (kg)</label><input type="number" step="0.01" id="f4-r4" value="0" /></div>
+            <div class="field">
+              <label>Organik Terukur (kg)</label>
+              <input type="number" step="0.01" id="f4-terukur" required readonly style="background:var(--leaf-100); cursor:not-allowed;" />
+              <div class="hint">Otomatis dari Penimbangan 8 Hari (FORM3) — RT &amp; hari yang sama.</div>
+            </div>
+            <div class="field"><label>O1 – Pakan ternak (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-o1" value="0" /></div>
+            <div class="field"><label>O2 – Kompos RT (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-o2" value="0" /></div>
+            <div class="field"><label>O3 – Kompos komunal (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-o3" value="0" /></div>
+            <div class="field"><label>O4 – Jogangan bersih (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-o4" value="0" /></div>
+            <div class="field"><label>O5 – Serasah dikelola (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-o5" value="0" /></div>
+            <div class="field"><label>R1 – Campur+angkut (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-r1" value="0" /></div>
+            <div class="field"><label>R2 – Dibakar (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-r2" value="0" /></div>
+            <div class="field"><label>R3 – Dibuang lingkungan (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-r3" value="0" /></div>
+            <div class="field"><label>R4 – Belum terverifikasi (kg)</label><input type="number" step="0.01" class="f4-rincian" id="f4-r4" value="0" /></div>
             <div class="field"><label>Bukti Wawancara</label><select id="f4-bw"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
             <div class="field"><label>Bukti Observasi</label><select id="f4-bo"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
             <div class="field"><label>Bukti Timbang</label><select id="f4-bt"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
             <div class="field"><label>Bukti Foto/Logbook</label><select id="f4-bf"><option value="true">Ada</option><option value="false">Tidak</option></select></div>
             <div class="field wide"><label>Catatan</label><input type="text" id="f4-catatan" /></div>
           </div>
-          <p class="hint">Faktor bukti, total rincian, selisih, organik terkoreksi, dan status rekonsiliasi dihitung otomatis oleh database setelah data disimpan.</p>
+
+          <div id="f4-balance-box" style="margin-top:16px; padding:14px 16px; border-radius:10px; border:1px solid var(--line); background:var(--paper);">
+            <div style="display:flex; flex-wrap:wrap; gap:24px;">
+              <div><div class="hint" style="margin:0;">Organik Terukur (FORM3)</div><strong id="f4-bal-terukur">0,00 kg</strong></div>
+              <div><div class="hint" style="margin:0;">Total Rincian (O1–R4)</div><strong id="f4-bal-rincian">0,00 kg</strong></div>
+              <div><div class="hint" style="margin:0;">Sisa Belum Dijabarkan</div><strong id="f4-bal-sisa">0,00 kg</strong></div>
+            </div>
+            <div id="f4-bal-status" style="margin-top:8px; font-size:13px; font-weight:600;"></div>
+          </div>
+
+          <p class="hint">Faktor bukti, organik terkoreksi, dan status rekonsiliasi dihitung otomatis oleh database setelah data disimpan.</p>
           <div class="form-actions">
             <button class="btn btn-primary" type="submit" id="f4-submit-btn">Simpan Validasi</button>
             <button class="btn btn-outline" type="button" id="btn-f4-cancel" style="display:none;">Batal Edit</button>
@@ -766,16 +780,22 @@ setInterval(async () => {
 // ---------------------------------------------------------------------
 let desaCache = [];
 let allSurveiRtsCache = [];
+let allTimbangCache = [];
 
 async function loadAllReferenceData() {
-  const [desaResult, rtsResult] = await Promise.all([listDesa(), listForm2()]);
+  const [desaResult, rtsResult, timbangResult] = await Promise.all([listDesa(), listForm2(), listForm3()]);
   desaCache = desaResult;
   allSurveiRtsCache = rtsResult;
+  allTimbangCache = timbangResult;
   fillDesaSelects();
 }
 
 async function refreshAllSurveiRtsCache() {
   allSurveiRtsCache = await listForm2();
+}
+
+async function refreshAllTimbangCache() {
+  allTimbangCache = await listForm3();
 }
 
 function fillDesaSelects() {
@@ -1112,6 +1132,7 @@ async function deleteForm3Row(id) {
     toast('Data timbang dihapus.');
     if (editingForm3Id === id) resetForm3Form();
     await refreshForm3();
+    await refreshAllTimbangCache();
   } catch (err) { toast(err.message, true); }
 }
 window.deleteForm3Row = deleteForm3Row;
@@ -1140,6 +1161,7 @@ $('#form-f3').addEventListener('submit', async (e) => {
     }
     resetForm3Form();
     await refreshForm3();
+    await refreshAllTimbangCache();
   } catch (err) { toast(err.message, true); }
 });
 
@@ -1167,7 +1189,7 @@ async function refreshForm3() {
 // ---------------------------------------------------------------------
 // FORM4: VALIDASI
 // ---------------------------------------------------------------------
-$('#f4-desa').addEventListener('change', () => fillForm4RtOptions());
+$('#f4-desa').addEventListener('change', () => { fillForm4RtOptions(); fillForm4OrganikTerukur(); });
 function fillForm4RtOptions(preselectIdRt = null) {
   const kode = $('#f4-desa').value;
   const rts = allSurveiRtsCache.filter(r => r.kode_desa === kode && r.subsample_timbang);
@@ -1175,6 +1197,58 @@ function fillForm4RtOptions(preselectIdRt = null) {
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
   if (preselectIdRt) $('#f4-idrt').value = preselectIdRt;
 }
+
+// Mengambil Organik Total dari data Penimbangan (FORM3) untuk kombinasi
+// Kode Desa + ID RT + Hari Ke yang sama — inilah yang membuat FORM4
+// menjadi penjabaran yang jumlahnya selalu bersumber dari FORM3.
+function fillForm4OrganikTerukur() {
+  const kode = $('#f4-desa').value;
+  const idRt = $('#f4-idrt').value;
+  const hari = Number($('#f4-hari').value);
+  const match = allTimbangCache.find(t => t.kode_desa === kode && t.id_rt === idRt && t.hari_ke === hari);
+  $('#f4-terukur').value = match ? match.organik_total : '';
+  updateF4Balance();
+}
+$('#f4-idrt').addEventListener('change', fillForm4OrganikTerukur);
+$('#f4-hari').addEventListener('input', fillForm4OrganikTerukur);
+
+// ---------------------------------------------------------------------
+// Kalkulator sisa live: Total Rincian (O1..R4) HARUS pas sama dengan
+// Organik Terukur — tidak boleh lebih, tidak boleh kurang.
+// ---------------------------------------------------------------------
+function updateF4Balance() {
+  const terukur = Number($('#f4-terukur').value) || 0;
+  const ids = ['f4-o1', 'f4-o2', 'f4-o3', 'f4-o4', 'f4-o5', 'f4-r1', 'f4-r2', 'f4-r3', 'f4-r4'];
+  const rincian = ids.reduce((sum, id) => sum + (Number($('#' + id).value) || 0), 0);
+  const sisa = terukur - rincian;
+  const balanced = Math.abs(sisa) < 0.005;
+
+  $('#f4-bal-terukur').textContent = fmt(terukur) + ' kg';
+  $('#f4-bal-rincian').textContent = fmt(rincian) + ' kg';
+  $('#f4-bal-sisa').textContent = fmt(sisa) + ' kg';
+
+  const box = $('#f4-balance-box');
+  const status = $('#f4-bal-status');
+  if (!$('#f4-terukur').value) {
+    box.style.borderColor = 'var(--line)';
+    status.style.color = 'var(--ink-400)';
+    status.textContent = 'Pilih Kode Desa, ID RT, dan Hari Ke yang datanya sudah ada di Penimbangan 8 Hari.';
+  } else if (balanced) {
+    box.style.borderColor = 'var(--leaf-500)';
+    status.style.color = 'var(--leaf-600)';
+    status.textContent = '✓ Pas — total rincian sudah sama persis dengan Organik Terukur.';
+  } else if (sisa > 0) {
+    box.style.borderColor = 'var(--compost-500)';
+    status.style.color = 'var(--compost-500)';
+    status.textContent = `Masih kurang ${fmt(sisa)} kg lagi yang belum dijabarkan ke O1–R4.`;
+  } else {
+    box.style.borderColor = 'var(--danger)';
+    status.style.color = 'var(--danger)';
+    status.textContent = `Kelebihan ${fmt(Math.abs(sisa))} kg — total rincian melebihi Organik Terukur, kurangi salah satu isian.`;
+  }
+  return balanced;
+}
+$$('.f4-rincian').forEach(el => el.addEventListener('input', updateF4Balance));
 
 let editingForm4Id = null;
 let form4Cache = [];
@@ -1188,6 +1262,7 @@ function resetForm4Form() {
   $('#f4-desa').disabled = false;
   $('#f4-idrt').disabled = false;
   $('#f4-hari').disabled = false;
+  updateF4Balance();
 }
 $('#btn-f4-cancel').addEventListener('click', resetForm4Form);
 
@@ -1220,6 +1295,7 @@ async function editForm4Row(id) {
   $('#f4-form-title').textContent = `Edit Validasi: ${r.id_rt} · Hari ${r.hari_ke}`;
   $('#f4-submit-btn').textContent = 'Simpan Perubahan';
   $('#btn-f4-cancel').style.display = 'inline-block';
+  updateF4Balance();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 window.editForm4Row = editForm4Row;
@@ -1239,6 +1315,16 @@ window.deleteForm4Row = deleteForm4Row;
 
 $('#form-f4').addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  if (!$('#f4-terukur').value) {
+    toast('Belum ada data Penimbangan (FORM3) untuk RT & Hari Ke ini. Isi FORM3 dulu untuk kombinasi tersebut.', true);
+    return;
+  }
+  if (!updateF4Balance()) {
+    toast('Total rincian (O1–R4) belum pas dengan Organik Terukur. Sesuaikan dulu sampai "Sisa" menunjukkan 0,00 kg.', true);
+    return;
+  }
+
   const row = {
     tanggal: $('#f4-tanggal').value,
     hari_ke: Number($('#f4-hari').value),
