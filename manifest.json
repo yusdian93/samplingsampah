@@ -1,0 +1,17 @@
+{
+  "name": "Survei Sampah Organik, Jogangan & Biopori Jumbo - DLH Tulungagung",
+  "short_name": "Survei Organik",
+  "description": "Aplikasi sampling & estimasi timbulan sampah organik Kabupaten Tulungagung",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FAF8F3",
+  "theme_color": "#1F2E1B",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
