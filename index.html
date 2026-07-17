@@ -308,9 +308,10 @@
   .toast.error{background:var(--danger);}
   legend-table td{font-family:var(--font-mono);}
   .mobile-topbar{display:none;}
+  .drawer-overlay{display:none;}
 
   @media (max-width: 860px){
-    #app.active{grid-template-columns:1fr;}
+    #app.active{grid-template-columns:1fr; grid-template-rows:auto 1fr; align-content:start;}
 
     .mobile-topbar{
       display:flex;
