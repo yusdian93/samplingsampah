@@ -760,13 +760,22 @@ setInterval(async () => {
 }, 20000); // setiap 20 detik
 
 // ---------------------------------------------------------------------
-// REFERENCE DATA (desa list dipakai di banyak dropdown)
+// REFERENCE DATA (desa list & seluruh data RT survei dipakai di banyak
+// dropdown — dimuat sekali di memori supaya dropdown ID RT langsung
+// instan tanpa nunggu jaringan tiap ganti desa)
 // ---------------------------------------------------------------------
 let desaCache = [];
+let allSurveiRtsCache = [];
 
 async function loadAllReferenceData() {
-  desaCache = await listDesa();
+  const [desaResult, rtsResult] = await Promise.all([listDesa(), listForm2()]);
+  desaCache = desaResult;
+  allSurveiRtsCache = rtsResult;
   fillDesaSelects();
+}
+
+async function refreshAllSurveiRtsCache() {
+  allSurveiRtsCache = await listForm2();
 }
 
 function fillDesaSelects() {
@@ -966,6 +975,7 @@ async function deleteForm2Row(id) {
     toast('Data survei dihapus.');
     if (editingForm2Id === id) resetForm2Form();
     await refreshForm2();
+    await refreshAllSurveiRtsCache();
   } catch (err) { toast(err.message, true); }
 }
 window.deleteForm2Row = deleteForm2Row;
@@ -1008,6 +1018,7 @@ $('#form-f2').addEventListener('submit', async (e) => {
     }
     resetForm2Form();
     await refreshForm2();
+    await refreshAllSurveiRtsCache();
   } catch (err) { toast(err.message, true); }
 });
 
@@ -1037,21 +1048,19 @@ async function refreshForm2() {
 // ---------------------------------------------------------------------
 let editingForm3Id = null;
 let form3Cache = [];
-let form3RtsCache = []; // data Survei 12Q untuk desa yang sedang dipilih (sumber Jumlah Anggota otomatis)
 
 function fillForm3JumlahAnggota() {
   const idRt = $('#f3-idrt').value;
-  const rt = form3RtsCache.find(r => r.id_rt === idRt);
+  const rt = allSurveiRtsCache.find(r => r.id_rt === idRt);
   $('#f3-anggota').value = rt ? (rt.jumlah_anggota ?? '') : '';
 }
 
 $('#f3-desa').addEventListener('change', () => fillForm3RtOptions());
 $('#f3-idrt').addEventListener('change', fillForm3JumlahAnggota);
 
-async function fillForm3RtOptions(preselectIdRt = null) {
+function fillForm3RtOptions(preselectIdRt = null) {
   const kode = $('#f3-desa').value;
-  form3RtsCache = await listForm2(kode);
-  const rts = form3RtsCache.filter(r => r.subsample_timbang);
+  const rts = allSurveiRtsCache.filter(r => r.kode_desa === kode && r.subsample_timbang);
   $('#f3-idrt').innerHTML = rts.map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
   if (preselectIdRt) $('#f3-idrt').value = preselectIdRt;
@@ -1158,11 +1167,11 @@ async function refreshForm3() {
 // ---------------------------------------------------------------------
 // FORM4: VALIDASI
 // ---------------------------------------------------------------------
-$('#f4-desa').addEventListener('change', fillForm4RtOptions);
-async function fillForm4RtOptions(preselectIdRt = null) {
+$('#f4-desa').addEventListener('change', () => fillForm4RtOptions());
+function fillForm4RtOptions(preselectIdRt = null) {
   const kode = $('#f4-desa').value;
-  const rts = await listForm2(kode);
-  $('#f4-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
+  const rts = allSurveiRtsCache.filter(r => r.kode_desa === kode && r.subsample_timbang);
+  $('#f4-idrt').innerHTML = rts.map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
   if (preselectIdRt) $('#f4-idrt').value = preselectIdRt;
 }
