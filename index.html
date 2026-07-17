@@ -277,6 +277,17 @@
     nav.tabs{flex-direction:row;}
     main{padding:18px;}
   }
+
+  /* ---------- MODE CETAK ---------- */
+  #print-area{display:none;}
+  .print-table{width:100%; border-collapse:collapse; font-size:10.5px;}
+  .print-table th, .print-table td{border:1px solid #333; padding:4px 6px; text-align:left; vertical-align:top;}
+  .print-table th{background:#eee;}
+  @media print{
+    body *{visibility:hidden;}
+    #print-area, #print-area *{visibility:visible;}
+    #print-area{display:block; position:absolute; top:0; left:0; width:100%; padding:16px;}
+  }
 </style>
 </head>
 <body>
@@ -323,6 +334,7 @@
       <button data-tab="form4"><span class="dot"></span>Validasi &amp; Rekonsiliasi</button>
       <button data-tab="rekapdesa"><span class="dot"></span>Rekap Desa</button>
       <button data-tab="rekaptipologi"><span class="dot"></span>Rekap Tipologi</button>
+      <button data-tab="cetak"><span class="dot"></span>Cetak Laporan</button>
       <button data-tab="petugas" id="nav-petugas" style="display:none;"><span class="dot"></span>Kelola Petugas</button>
     </nav>
     <div class="side-foot">
@@ -581,6 +593,39 @@
       <div class="card"><div class="table-wrap"><table id="tbl-rekaptipologi"><thead></thead><tbody></tbody></table></div></div>
     </section>
 
+    <!-- CETAK LAPORAN -->
+    <section class="page" id="page-cetak">
+      <div class="page-head">
+        <h2>Cetak Laporan</h2>
+        <p>Pilih laporan di bawah — akan langsung terbuka kotak dialog cetak browser. Bisa dicetak langsung ke printer, atau pilih tujuan <strong>"Save as PDF"</strong> untuk menyimpan sebagai file PDF.</p>
+      </div>
+      <div class="card">
+        <h3>Data Referensi</h3>
+        <div class="grid-kpi">
+          <button class="btn btn-outline btn-block" onclick="printReport('parameter')">📄 PARAMETER</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('klasifikasi')">📄 KLASIFIKASI PRAKTIK</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Form Lapangan</h3>
+        <div class="grid-kpi">
+          <button class="btn btn-outline btn-block" onclick="printReport('desa')">📄 FORM1 – Profil Desa</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('form2')">📄 FORM2 – Survei Observasi 12Q</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('form3')">📄 FORM3 – Penimbangan 8 Hari</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('form4')">📄 FORM4 – Validasi &amp; Rekap</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Rekap &amp; Ringkasan</h3>
+        <div class="grid-kpi">
+          <button class="btn btn-outline btn-block" onclick="printReport('rekapdesa')">📄 Rekap Desa</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('rekaptipologi')">📄 Rekap Tipologi</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('dataakhir')">📄 Data Akhir Kabupaten</button>
+          <button class="btn btn-outline btn-block" onclick="printReport('dashboard')">📄 Dashboard</button>
+        </div>
+      </div>
+    </section>
+
     <!-- KELOLA PETUGAS (ADMIN) -->
     <section class="page" id="page-petugas">
       <div class="page-head">
@@ -610,6 +655,8 @@
     </section>
   </main>
 </div>
+
+<div id="print-area"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -1516,6 +1563,211 @@ async function refreshPetugas() {
       </tr>`;
   }).join('');
 }
+
+// ---------------------------------------------------------------------
+// CETAK LAPORAN
+// ---------------------------------------------------------------------
+function fmtTgl(d) {
+  return d ? new Date(d).toLocaleDateString('id-ID') : '–';
+}
+
+function buildPrintHeader(title) {
+  return `
+    <div style="text-align:center; margin-bottom:16px; font-family:Arial, sans-serif;">
+      <div style="font-size:11px; letter-spacing:.05em;">PEMERINTAH KABUPATEN TULUNGAGUNG</div>
+      <div style="font-size:14px; font-weight:700;">DINAS LINGKUNGAN HIDUP</div>
+      <div style="font-size:10px;">Sampling &amp; Estimasi Timbulan Sampah Organik</div>
+      <hr style="margin:10px 0; border:none; border-top:1px solid #333;" />
+      <div style="font-size:15px; font-weight:700; margin-top:6px;">${title}</div>
+      <div style="font-size:10px; color:#555;">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+    </div>`;
+}
+
+function buildPrintTable(columns, rows) {
+  const thead = '<tr>' + columns.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
+  const tbody = rows.length
+    ? rows.map(r => '<tr>' + columns.map(c => `<td>${c.render ? c.render(r) : (r[c.key] ?? '–')}</td>`).join('') + '</tr>').join('')
+    : `<tr><td colspan="${columns.length}" style="text-align:center;">Tidak ada data</td></tr>`;
+  return `<table class="print-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+}
+
+async function printReport(type) {
+  let title = '';
+  let bodyHtml = '';
+  try {
+    if (type === 'parameter') {
+      title = 'PARAMETER';
+      const rows = await listParameter();
+      bodyHtml = buildPrintTable([
+        { key: 'key', label: 'Kunci' },
+        { key: 'nilai_numeric', label: 'Nilai Angka' },
+        { key: 'nilai_text', label: 'Nilai Teks' },
+        { key: 'satuan', label: 'Satuan' },
+        { key: 'keterangan', label: 'Keterangan' },
+      ], rows);
+
+    } else if (type === 'klasifikasi') {
+      title = 'KLASIFIKASI PRAKTIK';
+      const rows = await listKlasifikasiPraktik();
+      bodyHtml = buildPrintTable([
+        { key: 'kode', label: 'Kode' },
+        { key: 'praktik', label: 'Praktik' },
+        { key: 'status_penghitungan', label: 'Status' },
+        { key: 'syarat_minimal', label: 'Syarat Minimal' },
+        { key: 'faktor_praktek', label: 'Faktor', render: r => fmt(r.faktor_praktek, 1) },
+        { key: 'catatan', label: 'Catatan' },
+      ], rows);
+
+    } else if (type === 'desa') {
+      title = 'FORM1 – PROFIL DESA';
+      const rows = await listDesa();
+      bodyHtml = buildPrintTable([
+        { key: 'kode_desa', label: 'Kode' },
+        { key: 'nama_desa', label: 'Nama Desa' },
+        { key: 'kecamatan', label: 'Kecamatan' },
+        { key: 'strata', label: 'Strata' },
+        { key: 'penduduk', label: 'Penduduk', render: r => fmt(r.penduduk, 0) },
+        { key: 'jumlah_rt', label: 'Jml RT', render: r => fmt(r.jumlah_rt, 0) },
+        { key: 'ada_fasilitas_organik', label: 'Fas. Organik', render: r => r.ada_fasilitas_organik ? 'Ya' : 'Tidak' },
+        { key: 'ada_layanan_angkut', label: 'Layanan Angkut' },
+        { key: 'risiko_lingkungan', label: 'Risiko' },
+      ], rows);
+
+    } else if (type === 'form2') {
+      title = 'FORM2 – SURVEI OBSERVASI 12Q';
+      const rows = await listForm2();
+      bodyHtml = buildPrintTable([
+        { key: 'id_rt', label: 'ID RT' },
+        { key: 'kode_desa', label: 'Desa' },
+        { key: 'tanggal', label: 'Tanggal', render: r => fmtTgl(r.tanggal) },
+        { key: 'enumerator', label: 'Enumerator' },
+        { key: 'jumlah_anggota', label: 'Anggota' },
+        { key: 'subsample_timbang', label: 'Sub-sampel', render: r => r.subsample_timbang ? 'Ya' : 'Tidak' },
+        { key: 'q1_pengelola_sampah', label: 'Q1' },
+        { key: 'q2_praktik_sisa_makanan', label: 'Q2' },
+        { key: 'q3_organik_dipilah', label: 'Q3' },
+        { key: 'q4_ada_ternak', label: 'Q4' },
+        { key: 'q5_praktik_daun_halaman', label: 'Q5' },
+        { key: 'q6_komposter_jogangan', label: 'Q6' },
+        { key: 'q7_organik_bersih', label: 'Q7' },
+        { key: 'q8_praktik_anorganik', label: 'Q8' },
+        { key: 'q9_pembakaran', label: 'Q9' },
+        { key: 'q10_buang_lingkungan', label: 'Q10' },
+        { key: 'q11_layanan_angkut', label: 'Q11' },
+        { key: 'q12_hambatan_utama', label: 'Q12' },
+      ], rows);
+
+    } else if (type === 'form3') {
+      title = 'FORM3 – PENIMBANGAN 8 HARI';
+      const rows = await listForm3();
+      bodyHtml = buildPrintTable([
+        { key: 'tanggal', label: 'Tanggal', render: r => fmtTgl(r.tanggal) },
+        { key: 'hari_ke', label: 'Hari' },
+        { key: 'kode_desa', label: 'Desa' },
+        { key: 'id_rt', label: 'ID RT' },
+        { key: 'jumlah_anggota', label: 'Anggota' },
+        { key: 'organik_total', label: 'Organik (kg)', render: r => fmt(r.organik_total) },
+        { key: 'anorganik_bernilai', label: 'Anorganik (kg)', render: r => fmt(r.anorganik_bernilai) },
+        { key: 'residu', label: 'Residu (kg)', render: r => fmt(r.residu) },
+        { key: 'total_sampah', label: 'Total (kg)', render: r => fmt(r.total_sampah) },
+      ], rows);
+
+    } else if (type === 'form4') {
+      title = 'FORM4 – VALIDASI & REKAP';
+      const rows = await listForm4();
+      bodyHtml = buildPrintTable([
+        { key: 'tanggal', label: 'Tanggal', render: r => fmtTgl(r.tanggal) },
+        { key: 'hari_ke', label: 'Hari' },
+        { key: 'kode_desa', label: 'Desa' },
+        { key: 'id_rt', label: 'ID RT' },
+        { key: 'organik_terukur', label: 'Terukur (kg)', render: r => fmt(r.organik_terukur) },
+        { key: 'total_rincian', label: 'Rincian (kg)', render: r => fmt(r.total_rincian) },
+        { key: 'selisih', label: 'Selisih (kg)', render: r => fmt(r.selisih) },
+        { key: 'faktor_bukti', label: 'Faktor Bukti', render: r => fmt(r.faktor_bukti, 2) },
+        { key: 'organik_terkoreksi', label: 'Terkoreksi (kg)', render: r => fmt(r.organik_terkoreksi) },
+        { key: 'status_rekonsiliasi', label: 'Status' },
+      ], rows);
+
+    } else if (type === 'rekapdesa') {
+      title = 'REKAP DESA';
+      const rows = await getRekapDesa();
+      bodyHtml = buildPrintTable([
+        { key: 'kode_desa', label: 'Kode' },
+        { key: 'nama_desa', label: 'Desa' },
+        { key: 'tipologi', label: 'Tipologi' },
+        { key: 'responden_survei', label: 'Responden', render: r => fmt(r.responden_survei, 0) },
+        { key: 'subsample_timbang', label: 'Sub-sampel', render: r => fmt(r.subsample_timbang, 0) },
+        { key: 'hari_timbang_aktual', label: 'Hari Timbang', render: r => fmt(r.hari_timbang_aktual, 1) },
+        { key: 'organik_terukur_kg', label: 'Terukur (kg)', render: r => fmt(r.organik_terukur_kg) },
+        { key: 'organik_terkoreksi_kg', label: 'Terkoreksi (kg)', render: r => fmt(r.organik_terkoreksi_kg) },
+        { key: 'rasio_rekonsiliasi_ok', label: 'Rasio OK', render: r => pct(r.rasio_rekonsiliasi_ok) },
+        { key: 'estimasi_terverifikasi_kg_hari', label: 'Estimasi kg/hari', render: r => fmt(r.estimasi_terverifikasi_kg_hari, 1) },
+        { key: 'estimasi_terverifikasi_ton_tahun', label: 'Estimasi ton/thn', render: r => fmt(r.estimasi_terverifikasi_ton_tahun, 2) },
+        { key: 'status_kelayakan', label: 'Status' },
+      ], rows);
+
+    } else if (type === 'rekaptipologi') {
+      title = 'REKAP TIPOLOGI';
+      const rows = await getRekapTipologi();
+      bodyHtml = buildPrintTable([
+        { key: 'tipologi', label: 'Tipologi' },
+        { key: 'jumlah_desa', label: 'Jml Desa', render: r => fmt(r.jumlah_desa, 0) },
+        { key: 'penduduk', label: 'Penduduk', render: r => fmt(r.penduduk, 0) },
+        { key: 'responden_survei', label: 'Responden', render: r => fmt(r.responden_survei, 0) },
+        { key: 'subsample_timbang', label: 'Sub-sampel', render: r => fmt(r.subsample_timbang, 0) },
+        { key: 'estimasi_terverifikasi_kg_hari', label: 'Estimasi kg/hari', render: r => fmt(r.estimasi_terverifikasi_kg_hari, 1) },
+        { key: 'estimasi_terverifikasi_ton_tahun', label: 'Estimasi ton/thn', render: r => fmt(r.estimasi_terverifikasi_ton_tahun, 2) },
+        { key: 'kg_org_hari_tertimbang', label: 'kg/org/hari', render: r => fmt(r.kg_org_hari_tertimbang, 3) },
+        { key: 'status', label: 'Status' },
+      ], rows);
+
+    } else if (type === 'dataakhir') {
+      title = 'DATA AKHIR KABUPATEN';
+      const d = await getDataAkhirKabupaten();
+      const rows = [
+        { k: 'Jumlah Strata', v: fmt(d.jumlah_strata, 0) },
+        { k: 'Jumlah Desa Sampel', v: fmt(d.jumlah_desa_sampel, 0) },
+        { k: 'Jumlah Responden Survei', v: fmt(d.jumlah_responden_survei, 0) },
+        { k: 'Jumlah Sub-sampel Timbang', v: fmt(d.jumlah_subsample_timbang, 0) },
+        { k: 'Hari Penimbangan Ditetapkan', v: fmt(d.hari_penimbangan_ditetapkan, 0) },
+        { k: 'Rata-rata Hari Timbang Aktual', v: fmt(d.rata_rata_hari_timbang_aktual, 2) },
+        { k: 'Total Penduduk Desa Sampel', v: fmt(d.total_penduduk_desa_sampel, 0) },
+        { k: 'Total Organik Terukur (kg)', v: fmt(d.total_organik_terukur) },
+        { k: 'Total Organik Terkoreksi (kg)', v: fmt(d.total_organik_terkoreksi) },
+        { k: 'Faktor Verifikasi Tertimbang Kabupaten', v: fmt(d.faktor_verifikasi_tertimbang_kabupaten, 3) },
+        { k: 'Rata-rata Organik Terkoreksi (kg/org/hari)', v: fmt(d.rata_rata_organik_terkoreksi_kg_org_hari, 3) },
+        { k: 'Estimasi (kg/hari)', v: fmt(d.estimasi_kg_hari, 1) },
+        { k: 'Estimasi (ton/tahun)', v: fmt(d.estimasi_ton_tahun, 2) },
+        { k: 'Status Kelayakan Data', v: d.status_kelayakan_data },
+      ];
+      bodyHtml = buildPrintTable([{ key: 'k', label: 'Indikator' }, { key: 'v', label: 'Nilai' }], rows);
+
+    } else if (type === 'dashboard') {
+      title = 'DASHBOARD';
+      const d = await getDataAkhirKabupaten();
+      const rows = [
+        { k: 'Desa Sampel', v: `${fmt(d.jumlah_desa_sampel, 0)} desa (Target 12)` },
+        { k: 'Responden Survei', v: `${fmt(d.jumlah_responden_survei, 0)} RT (Target 360)` },
+        { k: 'Sub-sampel Timbang', v: `${fmt(d.jumlah_subsample_timbang, 0)} RT (Target 120)` },
+        { k: 'Rata-rata Hari Timbang', v: `${fmt(d.rata_rata_hari_timbang_aktual, 1)} hari (Target 8)` },
+        { k: 'Organik Terverifikasi', v: `${fmt(d.estimasi_kg_hari, 1)} kg/hari` },
+        { k: 'Organik Terverifikasi', v: `${fmt(d.estimasi_ton_tahun, 2)} ton/tahun` },
+        { k: 'Status Kelayakan Data', v: d.status_kelayakan_data },
+      ];
+      bodyHtml = buildPrintTable([{ key: 'k', label: 'Indikator' }, { key: 'v', label: 'Nilai' }], rows);
+
+    } else {
+      return;
+    }
+  } catch (err) {
+    toast(err.message || 'Gagal memuat data untuk dicetak', true);
+    return;
+  }
+
+  $('#print-area').innerHTML = buildPrintHeader(title) + bodyHtml;
+  setTimeout(() => window.print(), 150); // beri waktu render sebelum dialog cetak muncul
+}
+window.printReport = printReport;
 
 // ---------------------------------------------------------------------
 // BOOT
