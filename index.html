@@ -261,6 +261,14 @@
   .row-actions{display:flex; gap:6px;}
   .empty{color:var(--ink-400); font-size:13px; padding:14px 0;}
   .hint{font-size:12px; color:var(--ink-400); margin-top:4px;}
+  .report-list{display:flex; flex-direction:column; gap:8px;}
+  .report-row{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding:10px 14px;
+    border:1px solid var(--line); border-radius:8px;
+    flex-wrap:wrap;
+  }
+  .report-row > span{font-size:13.5px; font-weight:500;}
   .toast{
     position:fixed; bottom:20px; right:20px;
     background:var(--soil-900); color:#fff;
@@ -289,6 +297,7 @@
     #print-area{display:block; position:absolute; top:0; left:0; width:100%; padding:16px;}
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -681,33 +690,68 @@
     <!-- CETAK LAPORAN -->
     <section class="page" id="page-cetak">
       <div class="page-head">
-        <h2>Cetak Laporan</h2>
-        <p>Pilih laporan di bawah — akan langsung terbuka kotak dialog cetak browser. Bisa dicetak langsung ke printer, atau pilih tujuan <strong>"Save as PDF"</strong> untuk menyimpan sebagai file PDF.</p>
+        <h2>Cetak &amp; Export Laporan</h2>
+        <p><strong>Cetak</strong> membuka dialog cetak browser (bisa langsung ke printer atau "Save as PDF"). <strong>Excel</strong> langsung mengunduh file .xlsx berisi data yang sama.</p>
       </div>
       <div class="card">
         <h3>Data Referensi</h3>
-        <div class="grid-kpi">
-          <button class="btn btn-outline btn-block" onclick="printReport('parameter')">📄 PARAMETER</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('klasifikasi')">📄 KLASIFIKASI PRAKTIK</button>
+        <div class="report-list">
+          <div class="report-row"><span>📄 PARAMETER</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('parameter')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('parameter')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 KLASIFIKASI PRAKTIK</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('klasifikasi')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('klasifikasi')">⬇️ Excel</button>
+          </div></div>
         </div>
       </div>
       <div class="card">
         <h3>Form Lapangan</h3>
-        <div class="grid-kpi">
-          <button class="btn btn-outline btn-block" onclick="printReport('desa')">📄 FORM1 – Profil Desa</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('form2')">📄 FORM2 – Survei Observasi 12Q</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('form3')">📄 FORM3 – Penimbangan 8 Hari</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('form4')">📄 FORM4 – Validasi &amp; Rekap</button>
+        <div class="report-list">
+          <div class="report-row"><span>📄 FORM1 – Profil Desa</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('desa')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('desa')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 FORM2 – Survei Observasi 12Q</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('form2')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('form2')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 FORM3 – Penimbangan 8 Hari</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('form3')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('form3')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 FORM4 – Validasi &amp; Rekap</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('form4')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('form4')">⬇️ Excel</button>
+          </div></div>
         </div>
       </div>
       <div class="card">
         <h3>Rekap &amp; Ringkasan</h3>
-        <div class="grid-kpi">
-          <button class="btn btn-outline btn-block" onclick="printReport('rekapdesa')">📄 Rekap Desa</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('rekaptipologi')">📄 Rekap Tipologi</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('dataakhir')">📄 Data Akhir Kabupaten</button>
-          <button class="btn btn-outline btn-block" onclick="printReport('dashboard')">📄 Dashboard</button>
+        <div class="report-list">
+          <div class="report-row"><span>📄 Rekap Desa</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('rekapdesa')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('rekapdesa')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 Rekap Tipologi</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('rekaptipologi')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('rekaptipologi')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 Data Akhir Kabupaten</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('dataakhir')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('dataakhir')">⬇️ Excel</button>
+          </div></div>
+          <div class="report-row"><span>📄 Dashboard</span><div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReport('dashboard')">🖨️ Cetak</button>
+            <button class="btn btn-outline btn-sm" onclick="exportExcel('dashboard')">⬇️ Excel</button>
+          </div></div>
         </div>
+      </div>
+      <div class="card">
+        <h3>Export Semua Sekaligus</h3>
+        <p class="hint" style="margin-bottom:12px;">Mengunduh satu file Excel berisi seluruh 10 laporan di atas, masing-masing sebagai sheet terpisah — mirip workbook aslinya.</p>
+        <button class="btn btn-primary" onclick="exportExcelAll()">⬇️ Export Semua ke 1 File Excel</button>
       </div>
     </section>
 
@@ -1881,6 +1925,167 @@ async function printReport(type) {
   setTimeout(() => window.print(), 150); // beri waktu render sebelum dialog cetak muncul
 }
 window.printReport = printReport;
+
+// ---------------------------------------------------------------------
+// EXPORT EXCEL
+// ---------------------------------------------------------------------
+function downloadWorkbook(sheets, filename) {
+  if (typeof XLSX === 'undefined') {
+    toast('Modul Excel belum termuat (butuh koneksi internet). Coba refresh halaman.', true);
+    return false;
+  }
+  const wb = XLSX.utils.book_new();
+  sheets.forEach(({ name, rows }) => {
+    const ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ 'Info': 'Tidak ada data' }]);
+    XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31)); // nama sheet Excel maks 31 karakter
+  });
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `${filename}_${dateStr}.xlsx`);
+  return true;
+}
+
+async function getExcelDataset(type) {
+  if (type === 'parameter') {
+    const rows = await listParameter();
+    return { name: 'PARAMETER', filename: 'PARAMETER', rows: rows.map(r => ({
+      'Kunci': r.key, 'Nilai Angka': r.nilai_numeric, 'Nilai Teks': r.nilai_text,
+      'Satuan': r.satuan, 'Keterangan': r.keterangan,
+    })) };
+  }
+  if (type === 'klasifikasi') {
+    const rows = await listKlasifikasiPraktik();
+    return { name: 'KLASIFIKASI PRAKTIK', filename: 'KLASIFIKASI_PRAKTIK', rows: rows.map(r => ({
+      'Kode': r.kode, 'Praktik': r.praktik, 'Status Penghitungan': r.status_penghitungan,
+      'Syarat Minimal': r.syarat_minimal, 'Faktor': r.faktor_praktek, 'Catatan': r.catatan,
+    })) };
+  }
+  if (type === 'desa') {
+    const rows = await listDesa();
+    return { name: 'FORM1 PROFIL DESA', filename: 'FORM1_PROFIL_DESA', rows: rows.map(r => ({
+      'Kode': r.kode_desa, 'Nama Desa': r.nama_desa, 'Kecamatan': r.kecamatan, 'Strata': r.strata,
+      'Penduduk': r.penduduk, 'Jumlah RT': r.jumlah_rt,
+      'Fasilitas Organik': r.ada_fasilitas_organik ? 'Ya' : 'Tidak',
+      'Layanan Angkut': r.ada_layanan_angkut, 'Risiko Lingkungan': r.risiko_lingkungan, 'Catatan': r.catatan,
+    })) };
+  }
+  if (type === 'form2') {
+    const rows = await listForm2();
+    return { name: 'FORM2 SURVEI 12Q', filename: 'FORM2_SURVEI_OBSERVASI_12Q', rows: rows.map(r => ({
+      'ID RT': r.id_rt, 'Desa': r.kode_desa, 'Tanggal': r.tanggal, 'Enumerator': r.enumerator,
+      'Jumlah Anggota': r.jumlah_anggota, 'Sub-sampel Timbang': r.subsample_timbang ? 'Ya' : 'Tidak',
+      'Q1 Pengelola Sampah': r.q1_pengelola_sampah,
+      'Q2 Praktik Sisa Makanan': r.q2_praktik_sisa_makanan,
+      'Q3 Organik Dipilah': r.q3_organik_dipilah,
+      'Q4 Ada Ternak': r.q4_ada_ternak,
+      'Q5 Praktik Daun/Halaman': r.q5_praktik_daun_halaman,
+      'Q6 Komposter/Jogangan': r.q6_komposter_jogangan,
+      'Q7 Organik Bersih': r.q7_organik_bersih,
+      'Q8 Praktik Anorganik': r.q8_praktik_anorganik,
+      'Q9 Pembakaran': r.q9_pembakaran,
+      'Q10 Buang Lingkungan': r.q10_buang_lingkungan,
+      'Q11 Layanan Angkut': r.q11_layanan_angkut,
+      'Q12 Hambatan Utama': r.q12_hambatan_utama,
+      'Bukti Minimal': r.bukti_minimal, 'Catatan': r.catatan,
+    })) };
+  }
+  if (type === 'form3') {
+    const rows = await listForm3();
+    return { name: 'FORM3 PENIMBANGAN 8HARI', filename: 'FORM3_PENIMBANGAN_8HARI', rows: rows.map(r => ({
+      'Tanggal': r.tanggal, 'Hari Ke': r.hari_ke, 'Desa': r.kode_desa, 'ID RT': r.id_rt,
+      'Jumlah Anggota': r.jumlah_anggota,
+      'Organik Total (kg)': r.organik_total, 'Anorganik Bernilai (kg)': r.anorganik_bernilai,
+      'Residu (kg)': r.residu, 'Total Sampah (kg)': r.total_sampah, 'Catatan': r.catatan,
+    })) };
+  }
+  if (type === 'form4') {
+    const rows = await listForm4();
+    return { name: 'FORM4 VALIDASI REKAP', filename: 'FORM4_VALIDASI_REKAP', rows: rows.map(r => ({
+      'Tanggal': r.tanggal, 'Hari Ke': r.hari_ke, 'Desa': r.kode_desa, 'ID RT': r.id_rt,
+      'Organik Terukur (kg)': r.organik_terukur,
+      'O1': r.o1, 'O2': r.o2, 'O3': r.o3, 'O4': r.o4, 'O5': r.o5,
+      'R1': r.r1, 'R2': r.r2, 'R3': r.r3, 'R4': r.r4,
+      'Total Rincian (kg)': r.total_rincian, 'Selisih (kg)': r.selisih,
+      'Bukti Wawancara': r.bukti_wawancara ? 'Ada' : 'Tidak',
+      'Bukti Observasi': r.bukti_observasi ? 'Ada' : 'Tidak',
+      'Bukti Timbang': r.bukti_timbang ? 'Ada' : 'Tidak',
+      'Bukti Foto/Logbook': r.bukti_foto_logbook ? 'Ada' : 'Tidak',
+      'Faktor Bukti': r.faktor_bukti, 'Organik Terkoreksi (kg)': r.organik_terkoreksi,
+      'Rasio Terkoreksi': r.rasio_terkoreksi, 'Status Rekonsiliasi': r.status_rekonsiliasi,
+      'Catatan': r.catatan,
+    })) };
+  }
+  if (type === 'rekapdesa') {
+    const rows = await getRekapDesa();
+    return { name: 'REKAP DESA', filename: 'REKAP_DESA', rows: rows.map(r => ({
+      'Kode': r.kode_desa, 'Desa': r.nama_desa, 'Tipologi': r.tipologi, 'Penduduk': r.penduduk,
+      'Responden Survei': r.responden_survei, 'Sub-sampel Timbang': r.subsample_timbang,
+      'Hari Timbang Aktual': r.hari_timbang_aktual,
+      'Organik Terukur (kg)': r.organik_terukur_kg, 'Organik Terkoreksi (kg)': r.organik_terkoreksi_kg,
+      'Rasio Rekonsiliasi OK': r.rasio_rekonsiliasi_ok,
+      'Faktor Verifikasi Tertimbang': r.faktor_verifikasi_tertimbang,
+      'Organik Terkoreksi (kg/org/hari)': r.organik_terkoreksi_kg_org_hari,
+      'Estimasi (kg/hari)': r.estimasi_terverifikasi_kg_hari,
+      'Estimasi (ton/tahun)': r.estimasi_terverifikasi_ton_tahun,
+      'Status Kelayakan': r.status_kelayakan,
+    })) };
+  }
+  if (type === 'rekaptipologi') {
+    const rows = await getRekapTipologi();
+    return { name: 'REKAP TIPOLOGI', filename: 'REKAP_TIPOLOGI', rows: rows.map(r => ({
+      'Tipologi': r.tipologi, 'Jumlah Desa': r.jumlah_desa, 'Penduduk': r.penduduk,
+      'Responden Survei': r.responden_survei, 'Sub-sampel Timbang': r.subsample_timbang,
+      'Estimasi (kg/hari)': r.estimasi_terverifikasi_kg_hari,
+      'Estimasi (ton/tahun)': r.estimasi_terverifikasi_ton_tahun,
+      'kg/org/hari Tertimbang': r.kg_org_hari_tertimbang, 'Status': r.status,
+    })) };
+  }
+  if (type === 'dataakhir') {
+    const d = await getDataAkhirKabupaten();
+    return { name: 'DATA AKHIR KABUPATEN', filename: 'DATA_AKHIR_KABUPATEN',
+      rows: buildDataAkhirRows(d).map(r => ({ 'Indikator': r.k, 'Nilai': r.v })) };
+  }
+  if (type === 'dashboard') {
+    const d = await getDataAkhirKabupaten();
+    return { name: 'DASHBOARD', filename: 'DASHBOARD', rows: [
+      { 'Indikator': 'Desa Sampel', 'Nilai': d.jumlah_desa_sampel, 'Target': 12 },
+      { 'Indikator': 'Responden Survei', 'Nilai': d.jumlah_responden_survei, 'Target': 360 },
+      { 'Indikator': 'Sub-sampel Timbang', 'Nilai': d.jumlah_subsample_timbang, 'Target': 120 },
+      { 'Indikator': 'Rata-rata Hari Timbang', 'Nilai': fmt(d.rata_rata_hari_timbang_aktual, 1), 'Target': 8 },
+      { 'Indikator': 'Organik Terverifikasi (kg/hari)', 'Nilai': fmt(d.estimasi_kg_hari, 1), 'Target': '–' },
+      { 'Indikator': 'Organik Terverifikasi (ton/tahun)', 'Nilai': fmt(d.estimasi_ton_tahun, 2), 'Target': '–' },
+      { 'Indikator': 'Status Kelayakan Data', 'Nilai': d.status_kelayakan_data, 'Target': '–' },
+    ] };
+  }
+  return null;
+}
+
+async function exportExcel(type) {
+  try {
+    const dataset = await getExcelDataset(type);
+    if (!dataset) return;
+    if (downloadWorkbook([{ name: dataset.name, rows: dataset.rows }], dataset.filename)) {
+      toast(`File ${dataset.filename}.xlsx berhasil diunduh.`);
+    }
+  } catch (err) {
+    toast(err.message || 'Gagal export ke Excel', true);
+  }
+}
+window.exportExcel = exportExcel;
+
+async function exportExcelAll() {
+  const types = ['parameter', 'klasifikasi', 'desa', 'form2', 'form3', 'form4', 'rekapdesa', 'rekaptipologi', 'dataakhir', 'dashboard'];
+  try {
+    toast('Menyiapkan seluruh laporan…');
+    const datasets = await Promise.all(types.map(getExcelDataset));
+    const sheets = datasets.filter(Boolean).map(d => ({ name: d.name, rows: d.rows }));
+    if (downloadWorkbook(sheets, 'LAPORAN_SAMPLING_ORGANIK_TULUNGAGUNG')) {
+      toast('Semua laporan berhasil diunduh dalam 1 file Excel.');
+    }
+  } catch (err) {
+    toast(err.message || 'Gagal export semua laporan', true);
+  }
+}
+window.exportExcelAll = exportExcelAll;
 
 // ---------------------------------------------------------------------
 // BOOT
