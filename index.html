@@ -474,7 +474,11 @@
             <div class="field"><label>Hari Ke (1-8)</label><input type="number" id="f3-hari" min="1" max="8" required /></div>
             <div class="field"><label>Kode Desa</label><select id="f3-desa" required></select></div>
             <div class="field"><label>ID RT</label><select id="f3-idrt" required></select></div>
-            <div class="field"><label>Jumlah Anggota</label><input type="number" id="f3-anggota" min="0" /></div>
+            <div class="field">
+              <label>Jumlah Anggota</label>
+              <input type="number" id="f3-anggota" min="0" readonly style="background:var(--leaf-100); cursor:not-allowed;" />
+              <div class="hint">Otomatis dari data Survei 12Q RT ini.</div>
+            </div>
             <div class="field"><label>Organik Total (kg)</label><input type="number" step="0.01" id="f3-organik" required /></div>
             <div class="field"><label>Anorganik Bernilai (kg)</label><input type="number" step="0.01" id="f3-anorganik" /></div>
             <div class="field"><label>Residu (kg)</label><input type="number" step="0.01" id="f3-residu" /></div>
@@ -1033,14 +1037,25 @@ async function refreshForm2() {
 // ---------------------------------------------------------------------
 let editingForm3Id = null;
 let form3Cache = [];
+let form3RtsCache = []; // data Survei 12Q untuk desa yang sedang dipilih (sumber Jumlah Anggota otomatis)
 
-$('#f3-desa').addEventListener('change', fillForm3RtOptions);
+function fillForm3JumlahAnggota() {
+  const idRt = $('#f3-idrt').value;
+  const rt = form3RtsCache.find(r => r.id_rt === idRt);
+  $('#f3-anggota').value = rt ? (rt.jumlah_anggota ?? '') : '';
+}
+
+$('#f3-desa').addEventListener('change', () => fillForm3RtOptions());
+$('#f3-idrt').addEventListener('change', fillForm3JumlahAnggota);
+
 async function fillForm3RtOptions(preselectIdRt = null) {
   const kode = $('#f3-desa').value;
-  const rts = await listForm2(kode);
-  $('#f3-idrt').innerHTML = rts.filter(r => r.subsample_timbang).map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
+  form3RtsCache = await listForm2(kode);
+  const rts = form3RtsCache.filter(r => r.subsample_timbang);
+  $('#f3-idrt').innerHTML = rts.map(r => `<option value="${r.id_rt}">${r.id_rt}</option>`).join('')
     || '<option value="">(belum ada RT sub-sampel di desa ini)</option>';
   if (preselectIdRt) $('#f3-idrt').value = preselectIdRt;
+  fillForm3JumlahAnggota();
 }
 
 function resetForm3Form() {
