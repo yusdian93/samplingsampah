@@ -333,6 +333,10 @@
   </aside>
 
   <main>
+    <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:14px;">
+      <span class="hint" id="last-refresh-label">–</span>
+      <button class="btn btn-outline btn-sm" id="btn-manual-refresh">⟳ Perbarui Sekarang</button>
+    </div>
     <!-- DASHBOARD -->
     <section class="page active" id="page-dashboard">
       <div class="page-head">
@@ -600,7 +604,7 @@ import {
   listForm3, insertForm3, updateForm3, deleteForm3,
   listForm4, insertForm4, updateForm4, deleteForm4,
   getRekapDesa, getRekapTipologi, getDataAkhirKabupaten,
-  listProfiles, updateProfileRole, adminCreateUser, adminDeleteUser,
+  listProfiles, updateProfileRole, adminCreateUser, adminDeleteUser, adminResetPassword,
 } from './supabase-adapter.js';
 
 // ---------------------------------------------------------------------
@@ -695,6 +699,7 @@ async function enterApp() {
   $('#nav-petugas').style.display = currentProfile?.role === 'admin' ? 'flex' : 'none';
   await loadAllReferenceData();
   await refreshCurrentTab();
+  updateLastRefreshLabel();
 }
 
 // ---------------------------------------------------------------------
@@ -719,7 +724,7 @@ $$('#nav-tabs button').forEach(btn => {
     $$('.page').forEach(p => p.classList.remove('active'));
     currentTab = btn.dataset.tab;
     $('#page-' + currentTab).classList.add('active');
-    refreshCurrentTab();
+    refreshCurrentTab().then(updateLastRefreshLabel);
   });
 });
 
@@ -727,6 +732,28 @@ async function refreshCurrentTab() {
   try { await tabRefreshers[currentTab]?.(); }
   catch (err) { toast(err.message || 'Gagal memuat data', true); }
 }
+
+// ---------------------------------------------------------------------
+// AUTO-REFRESH — supaya data terbaru dari petugas lain (mis. sedang
+// input di desa/RT lain secara bersamaan) langsung terlihat tanpa
+// perlu pindah tab manual.
+// ---------------------------------------------------------------------
+function updateLastRefreshLabel() {
+  const el = $('#last-refresh-label');
+  if (el) el.textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+}
+
+$('#btn-manual-refresh').addEventListener('click', async () => {
+  await refreshCurrentTab();
+  updateLastRefreshLabel();
+});
+
+setInterval(async () => {
+  if (document.visibilityState !== 'visible') return; // hemat kuota saat tab tidak aktif
+  if (!$('#app').classList.contains('active')) return; // belum login
+  await refreshCurrentTab();
+  updateLastRefreshLabel();
+}, 20000); // setiap 20 detik
 
 // ---------------------------------------------------------------------
 // REFERENCE DATA (desa list dipakai di banyak dropdown)
@@ -1332,6 +1359,20 @@ async function deletePetugas(id, nama) {
 }
 window.deletePetugas = deletePetugas;
 
+async function resetPetugasPassword(id, nama) {
+  const newPassword = prompt(`Password baru untuk "${nama}" (minimal 6 karakter):`);
+  if (newPassword === null) return; // dibatalkan
+  if (newPassword.length < 6) {
+    toast('Password minimal 6 karakter.', true);
+    return;
+  }
+  try {
+    await adminResetPassword(id, newPassword);
+    toast(`Password "${nama}" berhasil diganti. Sampaikan password baru ini ke yang bersangkutan.`);
+  } catch (err) { toast(err.message, true); }
+}
+window.resetPetugasPassword = resetPetugasPassword;
+
 async function refreshPetugas() {
   const rows = await listProfiles();
   const thead = $('#tbl-petugas thead');
@@ -1343,6 +1384,7 @@ async function refreshPetugas() {
   }
   tbody.innerHTML = rows.map(r => {
     const isSelf = r.id === currentProfile?.id;
+    const namaEsc = (r.full_name || r.email || '').replace(/'/g, "\\'");
     return `
       <tr>
         <td>${r.full_name || '–'}${isSelf ? ' <span class="hint">(akun Anda)</span>' : ''}</td>
@@ -1355,7 +1397,12 @@ async function refreshPetugas() {
           </select>
         </td>
         <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID') : '–'}</td>
-        <td>${isSelf ? '' : `<button class="btn btn-danger btn-sm" onclick="deletePetugas('${r.id}', '${(r.full_name || r.email || '').replace(/'/g, "\\'")}')">Hapus</button>`}</td>
+        <td>
+          <div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick="resetPetugasPassword('${r.id}', '${namaEsc}')">Reset Password</button>
+            ${isSelf ? '' : `<button class="btn btn-danger btn-sm" onclick="deletePetugas('${r.id}', '${namaEsc}')">Hapus</button>`}
+          </div>
+        </td>
       </tr>`;
   }).join('');
 }

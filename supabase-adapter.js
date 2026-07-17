@@ -90,6 +90,15 @@ export async function adminDeleteUser(userId) {
   return data;
 }
 
+export async function adminResetPassword(userId, newPassword) {
+  const { data, error } = await supabase.functions.invoke('admin-users', {
+    body: { action: 'reset_password', user_id: userId, new_password: newPassword },
+  });
+  if (error) throw error;
+  if (data && data.ok === false) throw new Error(data.error);
+  return data;
+}
+
 // ---------------------------------------------------------------------
 // PARAMETER & KLASIFIKASI PRAKTIK (referensi, umumnya hanya dibaca)
 // ---------------------------------------------------------------------
